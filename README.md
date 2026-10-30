@@ -1,30 +1,24 @@
-# MNEMOSINE // ARQUIVO ZERO v2.2
+# MNEMOSINE // ARQUIVO ZERO
 
-## Início rápido
-1. Extraia esta pasta inteira.
-2. Abra `03_Gerador/Gerador_Casos_Mnemosine.html` no Microsoft Edge ou Google Chrome atual.
-3. Clique em **Selecionar pasta do projeto** e escolha a pasta raiz `Mnemosine_ArquivoZero_v2.2_Completo`.
-4. Clique em **GERAR PACK**. O gerador cria/atualiza automaticamente `01_Documentos` com:
-   - Dossiê de Ambientação
-   - Casos de Exemplo
-   - Cartas PnP + Quadro de Reconstrução
-   - Arquivo de Referência Técnica
-   - Manual do Mediador
-   - Modelo de Caso em Branco
-5. Gere um caso e clique em **Salvar PDF em 02_Casos**. O PDF e um JSON de reprodução ficam organizados nessa pasta.
+Gerador de casos investigativos com criptografia, códigos, percepção visual, cartas PnP e reconstrução de cena.
 
-## Importante
-- Os PDFs-base não vêm pré-gerados: o próprio gerador é a fonte única de renderização.
-- Os arquivos de `01_Documentos` usam nomes estáveis, sem número de versão, evitando links quebrados.
-- O Morse continua interativo no HTML e é convertido para evidência visual no PDF.
-- A ocultação por canais de cor usa dithering vermelho/ciano de baixo contraste; para recuperar a palavra, isole o canal vermelho/filtro equivalente.
-- Técnicas avançadas aparecem no gerador como roadmap e ficam desmarcadas/desabilitadas por padrão.
+## Abrir localmente
 
-## Técnicas implementadas
-César; A1Z26; acróstico; amostragem periódica; ímpares/pares; Morse visual + áudio; Polybius; coordenadas; Vigenère com Fragmento K; binário; posições primas; sequência temporal; ruído visual; ocultação por canais de cor.
+Abra `03_Gerador/Gerador_Casos_Mnemosine.html` em Edge/Chrome. Para `GERAR PACK` e salvar casos diretamente em pastas, selecione a pasta raiz do projeto quando o navegador solicitar.
 
-## Técnicas avançadas listadas
-Pigpen; Scytale; Base64; hexadecimal/ASCII; substituição monoalfabética; transposição colunar; book cipher; grade de Cardan; esteganografia em imagem.
+## Vercel
 
-## GitHub
-https://github.com/MicamAmorim/Mnemosine-Project-Start
+O projeto é estático e está preparado para Vercel. Importe este repositório em **Add New > Project**, mantenha **Framework Preset: Other** e não configure comando de build. `index.html` encaminha para o gerador.
+
+Em `https://` o gerador lê os assets publicados em `04_Assets` sem exigir uma cópia local. O botão **GERAR PACK** continua usando a File System Access API do Edge/Chrome para gravar `01_Documentos` e `02_Casos` no computador do usuário. Navegadores sem essa API ainda podem usar o gerador/HTML, mas não gravar automaticamente na estrutura de pastas.
+
+## Estrutura
+
+- `01_Documentos/`: PDFs-base reconstruídos por **GERAR PACK**.
+- `02_Casos/`: casos salvos pelo gerador (PDF + JSON; PNG extra quando houver esteganografia LSB).
+- `03_Gerador/`: gerador, guia de métodos e analisador LSB.
+- `04_Assets/`: imagens e identidade visual.
+
+## Técnicas
+
+As técnicas essenciais vêm marcadas por padrão. As avançadas estão implementadas, mas desmarcadas: Pigpen, Scytale, Base64, Hex/ASCII, substituição monoalfabética, transposição colunar, Book cipher, Grade de Cardan e esteganografia LSB.
