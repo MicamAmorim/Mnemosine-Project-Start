@@ -55,23 +55,24 @@
     {id:'polybius',name:'Quadrado de Polybius',family:'Códigos'},
     {id:'coords',name:'Coordenadas em mapa',family:'Raciocínio espacial'},
     {id:'vigenere',name:'Vigenère com chave derivada',family:'Cifras',needsKey:true},
-    {id:'binary',name:'Binário',family:'Códigos'},
+    {id:'binary',name:'Binário / ASCII',family:'Códigos'},
     {id:'prime',name:'Posições primas',family:'Estrutura textual'},
     {id:'time',name:'Sequência temporal',family:'Raciocínio'},
     {id:'noise',name:'Ruído visual',family:'Percepção visual'},
     {id:'color',name:'Ocultação por canais de cor',family:'Percepção visual'}
   ];
   const advanced=[
-    {id:'pigpen',name:'Pigpen',family:'Técnicas avançadas'},
-    {id:'scytale',name:'Scytale',family:'Técnicas avançadas'},
-    {id:'base64',name:'Base64',family:'Técnicas avançadas'},
-    {id:'hexascii',name:'Hexadecimal / ASCII',family:'Técnicas avançadas'},
-    {id:'mono',name:'Substituição monoalfabética',family:'Técnicas avançadas'},
-    {id:'columnar',name:'Transposição colunar',family:'Técnicas avançadas'},
-    {id:'book',name:'Book cipher',family:'Técnicas avançadas'},
-    {id:'cardan',name:'Grade de Cardan',family:'Técnicas avançadas'},
-    {id:'stegimage',name:'Esteganografia em imagem',family:'Técnicas avançadas'}
+    {id:'pigpen',name:'Pigpen',family:'Criptografia visual',implemented:true},
+    {id:'scytale',name:'Scytale',family:'Transposição',implemented:true},
+    {id:'base64',name:'Base64',family:'Codificação digital',implemented:true},
+    {id:'hexascii',name:'Hexadecimal / ASCII',family:'Codificação digital',implemented:true},
+    {id:'mono',name:'Substituição monoalfabética',family:'Cifras',implemented:true,needsKey:true},
+    {id:'columnar',name:'Transposição colunar',family:'Transposição',implemented:true,needsKey:true},
+    {id:'book',name:'Book cipher',family:'Cifras por referência',implemented:true},
+    {id:'cardan',name:'Grade de Cardan',family:'Criptografia visual',implemented:true},
+    {id:'stegimage',name:'Esteganografia em imagem (LSB)',family:'Esteganografia',implemented:true,digital:true}
   ];
+  const allTechniques=[...implemented,...advanced];
   function hash(str){let h=2166136261>>>0;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
   function rngFrom(seed){let a=hash(String(seed));return function(){let t=a+=0x6D2B79F5;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
   function shuffle(a,r){a=a.slice();for(let i=a.length-1;i>0;i--){let j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
@@ -79,6 +80,6 @@
   function norm(s){return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9 ]/g,'').replace(/\s+/g,' ').trim()}
   function verification(solution){return categories.map(c=>solution[c].frag).join('')}
   function generate(seed,selected){const r=rngFrom(seed);const solution={};for(const c of categories)solution[c]=choose(cards[c],r);let techs=shuffle(selected.slice(),r);while(techs.length<6)techs=techs.concat(shuffle(selected,r));techs=techs.slice(0,6);return {seed:String(seed),solution,techniques:categories.map((c,i)=>({category:c,technique:techs[i]})),verification:verification(solution)} }
-  global.MnemosineData={cards,categories,labels,implemented,advanced,rngFrom,shuffle,choose,norm,generate,verification};
+  global.MnemosineData={cards,categories,labels,implemented,advanced,allTechniques,rngFrom,shuffle,choose,norm,generate,verification};
   global.rngFrom=rngFrom;
 })(window);
