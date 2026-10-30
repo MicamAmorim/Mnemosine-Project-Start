@@ -1,18 +1,10 @@
-import { readFileSync, writeFileSync, mkdirSync, rmSync, cpSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 import { join } from 'node:path';
 
 const root = process.cwd();
-const dist = join(root, 'dist');
 const generatorDir = join(root, '03_Gerador');
 const bundleDir = join(generatorDir, 'generator_bundle');
-
-rmSync(dist, { recursive: true, force: true });
-mkdirSync(dist, { recursive: true });
-
-cpSync(join(root, 'index.html'), join(dist, 'index.html'));
-cpSync(generatorDir, join(dist, '03_Gerador'), { recursive: true });
-cpSync(join(root, '04_Assets'), join(dist, '04_Assets'), { recursive: true });
 
 let payload = '';
 for (let i = 1; i <= 7; i++) {
@@ -36,7 +28,5 @@ if (!/^<!doctype html>/i.test(html.trim())) {
   throw new Error('Bundle descompactado, mas o HTML não foi reconhecido');
 }
 
-writeFileSync(join(dist, '03_Gerador', 'Gerador_Casos_Mnemosine.html'), html, 'utf8');
-rmSync(join(dist, '03_Gerador', 'generator_bundle'), { recursive: true, force: true });
-
-console.log(`MNEMOSINE: gerador estático criado (${Buffer.byteLength(html)} bytes).`);
+writeFileSync(join(generatorDir, 'Gerador_Casos_Mnemosine.html'), html, 'utf8');
+console.log(`MNEMOSINE: HTML estático reconstruído (${Buffer.byteLength(html)} bytes).`);
