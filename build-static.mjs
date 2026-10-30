@@ -11,7 +11,9 @@ let payload = '';
 for (let i = 1; i <= 7; i++) {
   const name = `v23_${String(i).padStart(2, '0')}.js`;
   const src = readFileSync(join(bundleDir, name), 'utf8');
-  const match = src.match(/\+'([^']+)'\s*;?\s*$/s);
+  // The bundle may append chunks using either `+= '...'` or `... + '...'`.
+  // Always extract the final single-quoted payload from the fragment.
+  const match = src.match(/'([^']+)'\s*;?\s*$/s);
   if (!match) throw new Error(`Não foi possível extrair o payload de ${name}`);
   payload += match[1];
 }
