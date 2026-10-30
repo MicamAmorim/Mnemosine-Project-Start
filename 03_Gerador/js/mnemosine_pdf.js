@@ -56,5 +56,24 @@
     }
     return buildPdf(pages);
   }
+  async function pdfFromDrawers(drawers, quality=0.9){
+    const DPI=144, S=DPI/25.4;
+    const sizes={portrait:[Math.round(210*S),Math.round(297*S)],landscape:[Math.round(297*S),Math.round(210*S)]};
+    const pages=[];
+    for(const d of drawers){
+      const orientation=d.orientation||'portrait';
+      const [w,h]=sizes[orientation];
+      const canvas=document.createElement('canvas');
+      canvas.width=w; canvas.height=h;
+      const ctx=canvas.getContext('2d');
+      ctx.fillStyle='#eee9dc';
+      ctx.fillRect(0,0,w,h);
+      await d.draw(ctx);
+      pages.push({canvas,orientation});
+      await new Promise(r=>setTimeout(r,0));
+    }
+    return canvasesToPdf(pages,quality);
+  }
   global.MnemosinePDF={canvasToJpegBytes,buildPdf,canvasesToPdf};
+  global.pdfFromDrawers=pdfFromDrawers;
 })(window);
