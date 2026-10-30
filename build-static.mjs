@@ -75,6 +75,18 @@ data = data.replace(`{id:'acrostic',name:'Acróstico',family:'Estrutura textual'
 data = data.replace(`{id:'coords',name:'Coordenadas em mapa',family:'Raciocínio espacial'}`, `{id:'coords',name:'Mapa por trajetória codificada',family:'Raciocínio espacial'}`);
 writeFileSync(dataPath, data, 'utf8');
 
+const guidePath = join(publicDir, '03_Gerador', 'Metodos_Mnemosine.html');
+let guide = readFileSync(guidePath, 'utf8');
+guide = mustReplace(guide,
+  `<div class="card method" id="acrostic"><h3>Acróstico <span class="tag">implementada</span></h3><p>Leia iniciais ou finais de linhas/frases. O conteúdo aparente pode ser apenas cobertura.</p><div class="example">Não feche a porta.\nObserve a janela.\nRegistre o horário.\nTente novamente.\nEvite pressa.\n→ NORTE</div></div>`,
+  `<div class="card method" id="acrostic"><h3>Leitura por coluna oculta <span class="tag">implementada</span></h3><p><b>Reconheça:</b> várias linhas monoespaçadas de comprimento semelhante, como logs ou transcrições técnicas. <b>Resolva:</b> teste colunas verticais; uma delas forma a palavra de cima para baixo. A coluna muda a cada seed e as iniciais das linhas não entregam a resposta.</p><div class="example">21:08 | R42 | REGISTRO CONFERIDO SEM DIVERGENCIA\n20:51 | R17 | ACESSO VALIDADO PELO CONTROLE INTERNO\n...\n\nProcure uma coluna vertical consistente, não as primeiras letras.</div></div>`,
+  'guia de coluna oculta');
+guide = mustReplace(guide,
+  `<div class="card method" id="coords"><h3>Coordenadas em mapa <span class="tag">implementada</span></h3><p>Use coluna + linha para localizar a célula. Exemplo: C2 = coluna C, linha 2. O valor encontrado na planta é a resposta.</p></div>`,
+  `<div class="card method" id="coords"><h3>Mapa por trajetória codificada <span class="tag">implementada</span></h3><p>A célula final não é fornecida. Localize o <b>ponto inicial</b> e interprete a sequência como posições de relógio: <b>12 = norte, 3 = leste, 6 = sul, 9 = oeste</b>. Percorra uma célula por comando. O conteúdo da célula onde o trajeto termina é a resposta. Alguns trajetos incluem um pequeno desvio que retorna ao ponto anterior.</p><div class="example">INÍCIO: B3\nTRAJETO: 3 · 9 · 12 · 3 · 3\n\nSiga cada movimento na grade; não há coordenada final impressa.</div></div>`,
+  'guia de trajetória');
+writeFileSync(guidePath, guide, 'utf8');
+
 // The HTML preview historically printed the coordinate label. It now describes a path, never the target cell.
 html = html.replaceAll('COORDENADA:', 'TRAJETO CODIFICADO:');
 writeFileSync(join(publicDir, '03_Gerador', 'Gerador_Casos_Mnemosine.html'), html, 'utf8');
