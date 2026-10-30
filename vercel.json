@@ -1,12 +1,14 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "node build-static.mjs",
+  "outputDirectory": "dist",
   "cleanUrls": false,
   "trailingSlash": false,
   "headers": [
     {
       "source": "/03_Gerador/(.*)",
       "headers": [
-        {"key": "Cache-Control", "value": "public, max-age=0, must-revalidate"}
+        {"key": "Cache-Control", "value": "no-store, max-age=0"}
       ]
     }
   ]
