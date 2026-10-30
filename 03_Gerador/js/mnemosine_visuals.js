@@ -10,12 +10,20 @@
   function visualData(word,seed,mode='noise'){
     const W=900,H=320,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d'),r=rngFrom(seed+'|'+word+'|'+mode),md=maskForText(word,W,H),img=x.createImageData(W,H);
     if(mode==='color'){
-      const A=[148,126,128], B=[121,139,143];
+      // Duas cores com luminância praticamente idêntica. A máscara altera apenas
+      // a PROPORÇÃO entre elas: visualmente o RGB continua parecendo ruído,
+      // mas o canal vermelho acumula contraste suficiente para revelar o texto.
+      // A diferença é forte o bastante para sobreviver ao JPEG usado no PDF.
+      const A=[170,116,135], B=[110,134,135];
       for(let i=0;i<W*H;i++){
-        const inside=md[i*4]>128, pA=inside?0.485:0.515, base=r()<pA?A:B;
-        for(let ch=0;ch<3;ch++){let n=(r()+r()+r()-1.5)*22;img.data[i*4+ch]=Math.max(0,Math.min(255,base[ch]+n))}img.data[i*4+3]=255;
+        const inside=md[i*4]>128, pA=inside?.68:.32, base=r()<pA?A:B;
+        for(let ch=0;ch<3;ch++){
+          const n=(r()+r()+r()-1.5)*24;
+          img.data[i*4+ch]=Math.max(0,Math.min(255,base[ch]+n));
+        }
+        img.data[i*4+3]=255;
       }
-      x.putImageData(img,0,0);x.globalAlpha=.18;x.fillStyle='#e6e2dc';for(let j=0;j<5200;j++)x.fillRect(r()*W,r()*H,1+r()*2.5,1+r()*2.5);x.globalAlpha=1;
+      x.putImageData(img,0,0);
     }else{
       for(let i=0;i<W*H;i++){const inside=md[i*4]>128;let n=(r()-.5)*122,base=151+n+(inside?7:-1);let v=Math.max(0,Math.min(255,base));img.data[i*4]=img.data[i*4+1]=img.data[i*4+2]=v;img.data[i*4+3]=255}x.putImageData(img,0,0);x.globalAlpha=.22;x.strokeStyle='#fff';for(let j=0;j<150;j++){let yy=r()*H;x.beginPath();x.moveTo(0,yy);x.lineTo(W,yy+(r()-.5)*6);x.stroke()}x.globalAlpha=1;
     }
