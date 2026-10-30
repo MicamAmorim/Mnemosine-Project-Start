@@ -1,0 +1,11 @@
+MNEMOSINE // ARQUIVO ZERO v2.3
+
+- Morse PDF refeito com o mesmo modelo de quebra utilizado no HTML e limite físico da área de evidência.
+- Quadro de Reconstrução corrigido: 6 slots de 63 x 88 mm passam a caber integralmente no A4 paisagem.
+- Evidências do PDF recebem clipping e limites de altura para impedir invasão da conclusão/rodapé.
+- Referência Técnica expandida e técnicas avançadas documentadas.
+- Pigpen, Scytale, Base64, Hex/ASCII, substituição monoalfabética, transposição colunar, Book cipher, Grade de Cardan e esteganografia LSB implementados; ficam desmarcados por padrão.
+- Técnicas com palavra-chave usam Fragmento K intermediário.
+- Esteganografia LSB salva PNG anexo ao caso e inclui analisador local/web.
+- Assets podem ser lidos diretamente do site em HTTPS; escrita do PACK continua opcionalmente em pasta local via File System Access API.
+- index.html e vercel.json adicionados para hospedagem estática no Vercel.
