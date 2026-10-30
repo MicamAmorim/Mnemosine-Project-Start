@@ -1,0 +1,13 @@
+MNEMOSINE // ARQUIVO ZERO v2.2
+
+- GERAR PACK cria 01_Documentos do zero.
+- PDFs-base e casos passam a compartilhar o mesmo motor de geração.
+- Pasta 02_Casos criada para PDFs e JSONs de casos.
+- Lista de casos gerados no painel do aplicativo.
+- Ocultação por canais de cor refeita com dithering estatístico de baixo contraste.
+- Técnicas avançadas listadas separadamente e não marcadas por padrão.
+- Nomes estáveis dos PDFs-base para evitar links internos quebrados.
+- Exportação HTML mantém Morse interativo.
+- Gabarito do mediador permanece como última página do caso.
+- Quadro de Reconstrução mantém slots físicos de 63 x 88 mm.
+- Corrigido helper de caminhos da File System Access API.
