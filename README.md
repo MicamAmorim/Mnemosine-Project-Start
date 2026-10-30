@@ -1,37 +1,41 @@
-# MNEMOSINE // ARQUIVO ZERO
+# MNEMOSINE // ARQUIVO ZERO v2.2
 
-Gerador offline de casos investigativos para uso em sala de aula, combinando cartas físicas, criptografia, códigos, enigmas perceptivos e reconstrução de ocorrência.
+Gerador offline de casos investigativos para uso em sala de aula.
 
-## Como usar
+## Fluxo recomendado
 
-1. Baixe o pack completo com os assets e extraia-o.
-2. Abra `03_Gerador/Gerador_Casos_Mnemosine.html` em Edge/Chrome atual.
-3. Clique em **Selecionar pasta do projeto** e escolha a pasta raiz extraída.
-4. Clique em **GERAR PACK** para criar os documentos-base em `01_Documentos`.
-5. Gere um caso e use **Salvar caso em PDF em 02_Casos**.
+1. Extraia o pack completo.
+2. Abra `03_Gerador/Gerador_Casos_Mnemosine.html` no Edge/Chrome.
+3. Clique em **Selecionar pasta do projeto** e escolha a pasta raiz.
+4. Clique em **GERAR PACK** para criar/atualizar `01_Documentos` usando o mesmo motor de renderização dos casos.
+5. Gere casos e salve-os em `02_Casos`.
 
 ## Estrutura
 
-- `01_Documentos/`: PDFs-base gerados localmente.
-- `02_Casos/`: casos individuais e JSONs de reprodução.
-- `02_Audio/`: áudio/painel auxiliar.
-- `03_Gerador/`: aplicativo, guia de métodos e módulos JS.
-- `04_Assets/`: imagens fixas (distribuídas no pack; não versionadas neste commit inicial).
+- `01_Documentos/` — gerada pelo próprio app; não é fonte de verdade.
+- `02_Casos/` — PDFs/JSONs de casos gerados.
+- `03_Gerador/` — aplicação e módulos JS.
+- `04_Assets/` — imagens fixas; fornecidas no ZIP completo, mas omitidas do GitHub para manter o repositório leve.
 
-## Técnicas implementadas
+## Técnicas implementadas por padrão
 
-César, A1Z26, acróstico, amostragem periódica, ímpares/pares, Morse visual + áudio, Polybius, coordenadas, Vigenère com chave derivada, binário, posições primas, sequência temporal, ruído visual e ocultação por canais de cor.
-
-Toda técnica que exija palavra-passe deve receber a chave por um **Fragmento K** anterior; a palavra-passe nunca é entregue diretamente.
+César, A1Z26, acróstico, amostragem periódica, ímpares/pares, Morse visual + áudio, Polybius, coordenadas, Vigenère com palavra-passe derivada por Fragmento K, binário, posições primas, sequência temporal, ruído visual e ocultação por canais de cor.
 
 ## Técnicas avançadas / roadmap
 
 Pigpen, Scytale, Base64, hexadecimal/ASCII, substituição monoalfabética, transposição colunar, book cipher, grade de Cardan e esteganografia em imagem.
 
-## Fonte única de renderização
+## Regra de chave
 
-A partir da v2.2, os PDFs-base e os casos usam o mesmo motor Canvas/PDF no navegador. Isso evita divergências entre gráficos mostrados no gerador e gráficos impressos.
+Nenhuma técnica que exija palavra-passe recebe a chave diretamente. A chave deve vir de um Fragmento K anterior, mais simples.
 
-## Assets
+## v2.2
 
-Os assets binários não estão no commit inicial para manter o repositório leve. Copie a pasta `04_Assets` do pack completo para a raiz do projeto.
+- botão **GERAR PACK**;
+- PDFs-base e casos usando a mesma fonte de renderização;
+- nomes estáveis dos documentos para evitar links quebrados;
+- pasta `02_Casos` para organização dos casos;
+- listagem de casos gerados;
+- ocultação por canais de cor refeita com dithering estatístico;
+- técnicas avançadas listadas, mas desmarcadas por padrão;
+- assets ficam fora do commit principal e dentro do ZIP distribuído.
