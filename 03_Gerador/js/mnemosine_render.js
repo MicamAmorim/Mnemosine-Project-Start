@@ -1,65 +1,171 @@
+/* Mnemosine // Arquivo Zero — renderizador (v3.0), parte 1: kit de desenho.
+ * Tudo é desenhado em MILÍMETROS e rasterizado em 300 DPI (pré-visualização usa DPI menor com
+ * o MESMO layout: as quebras de linha são medidas numa escala fixa, independente do DPI). */
 (function(global){
-  const D=()=>global.MnemosineData;
-  const V=()=>global.MnemosineVisuals;
-  const DPI=144, S=DPI/25.4;
-  const A4={p:[Math.round(210*S),Math.round(297*S)],l:[Math.round(297*S),Math.round(210*S)]};
-  const C={paper:'#eee9dc',ink:'#222',navy:'#233d4d',muted:'#6e6a62',line:'#817b70',gold:'#b78b35',red:'#a73732',blue:'#c9d5dc',cream:'#f6f0e4',green:'#3b7865'};
-  const mm=n=>n*S;
-  const cache=new Map();
-  function font(size,bold=false,serif=false){return `${bold?'700':'400'} ${Math.round(size*S)}px ${serif?'Georgia,serif':'Courier New,monospace'}`}
-  function page(orientation='portrait'){const c=document.createElement('canvas'), sz=orientation==='landscape'?A4.l:A4.p;c.width=sz[0];c.height=sz[1];const x=c.getContext('2d');paper(x,c.width,c.height);return {canvas:c,ctx:x,orientation}}
-  function paper(x,w,h){x.fillStyle=C.paper;x.fillRect(0,0,w,h);const r=Math.random;x.fillStyle='rgba(110,100,82,.05)';for(let i=0;i<220;i++){x.beginPath();x.ellipse(r()*w,r()*h,mm(1+r()*7),mm(.5+r()*3),r()*Math.PI,0,Math.PI*2);x.fill()}x.strokeStyle='rgba(90,80,65,.08)';for(let yy=mm(40);yy<h-mm(20);yy+=mm(34)){x.beginPath();x.moveTo(mm(14),yy);x.lineTo(w-mm(14),yy);x.stroke()}}
-  async function asset(name){if(cache.has(name))return cache.get(name);try{const u=await MnemosineFS.assetDataURL(name);const im=await img(u);cache.set(name,im);return im}catch(e){cache.set(name,null);return null}}
-  function img(src){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=src})}
-  function wrap(x,t,w){const out=[];for(const p of String(t).split('\n')){let l='';for(const q of p.split(/\s+/)){const z=l?l+' '+q:q;if(l&&x.measureText(z).width>w){out.push(l);l=q}else l=z}out.push(l)}return out}
-  function text(x,t,xx,yy,w,size=3,bold=false,color=C.ink,lh=1.35,serif=false){x.font=font(size,bold,serif);x.fillStyle=color;x.textBaseline='top';let y=yy;for(const l of wrap(x,t,w)){x.fillText(l,xx,y);y+=mm(size*lh)}return y}
-  function box(x,xx,yy,w,h,fill=null,stroke=C.line){if(fill){x.fillStyle=fill;x.fillRect(mm(xx),mm(yy),mm(w),mm(h))}x.strokeStyle=stroke;x.lineWidth=1;x.strokeRect(mm(xx),mm(yy),mm(w),mm(h))}
-  async function header(x,id,pageNo,sub='ARQUIVO ZERO'){const logo=await asset('dicc_logo_clean.png');if(logo)x.drawImage(logo,mm(18),mm(10),mm(24),mm(30));text(x,'ESTADO DA REPÚBLICA FEDERATIVA DO BRASIL\nSECRETARIA DE SEGURANÇA PÚBLICA',mm(48),mm(14),mm(95),2.2,false,C.muted,1.8);text(x,'DEPARTAMENTO DE INVESTIGAÇÕES CRIMINAIS E\nCOMBATE AO CRIME ORGANIZADO',mm(48),mm(28),mm(95),2.4,true,C.ink,1.8);text(x,'D.I.C.C. - UNIDADE DE ANÁLISE DE CASOS ESPECIAIS',mm(48),mm(43),mm(110),1.8,false,C.muted);x.strokeStyle=C.ink;x.beginPath();x.moveTo(mm(16),mm(56));x.lineTo(x.canvas.width-mm(16),mm(56));x.stroke();x.font=font(8,true,true);x.fillStyle=C.ink;x.fillText('CASO MNEMOSINE',mm(16),mm(64));box(x,140,58,53,27);text(x,'NÚMERO DO CASO:',mm(144),mm(62),mm(44),1.6,false,C.muted);text(x,id,mm(144),mm(69),mm(44),2.1,true);text(x,sub,mm(144),mm(77),mm(44),1.6,false,C.muted);box(x,166,86,27,13);text(x,String(pageNo),mm(175),mm(90),mm(12),2,true)}
-  function strip(x,label,y=103){x.fillStyle=C.navy;x.fillRect(mm(18),mm(y),x.canvas.width-mm(54),mm(11));x.fillStyle='#fff';x.font=font(3,true);x.fillText(label,mm(22),mm(y+3.2))}
-  function section(x,n,title,y){x.fillStyle=C.ink;x.font=font(2.7,true);x.fillText(`${n}. ${title}`,mm(18),mm(y));x.strokeStyle=C.line;x.beginPath();x.moveTo(mm(18),mm(y+5));x.lineTo(x.canvas.width-mm(16),mm(y+5));x.stroke()}
-  function footer(x,code){const h=x.canvas.height;x.strokeStyle=C.line;x.beginPath();x.moveTo(mm(16),h-mm(24));x.lineTo(x.canvas.width-mm(16),h-mm(24));x.stroke();x.fillStyle=C.blue;x.fillRect(mm(18),h-mm(20),mm(45),mm(13));text(x,'CÓDIGO DO ARQUIVO:',mm(21),h-mm(18),mm(38),1.45,false,C.muted);text(x,code,mm(21),h-mm(13),mm(38),1.9,true);text(x,'CASO MNEMOSINE - DOCUMENTO FICCIONAL PARA ATIVIDADE EDUCACIONAL',x.canvas.width/2-mm(62),h-mm(5),mm(124),1.2,false,C.muted)}
-  function titleBlock(x,label){strip(x,label,103)}
-  function normalize(s){return D().norm(s)}
-  const AZ='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  function caesar(s,k=3){return normalize(s).split('').map(ch=>{const i=AZ.indexOf(ch);return i<0?ch:AZ[(i+k)%26]}).join('')}
-  function a1z26(s){return normalize(s).split('').map(ch=>ch===' '?'':AZ.indexOf(ch)+1).filter(v=>v!=='').join(' ')}
-  const MORSE={A:'.-',B:'-...',C:'-.-.',D:'-..',E:'.',F:'..-.',G:'--.',H:'....',I:'..',J:'.---',K:'-.-',L:'.-..',M:'--',N:'-.',O:'---',P:'.--.',Q:'--.-',R:'.-.',S:'...',T:'-',U:'..-',V:'...-',W:'.--',X:'-..-',Y:'-.--',Z:'--..','0':'-----','1':'.----','2':'..---','3':'...--','4':'....-','5':'.....','6':'-....','7':'--...','8':'---..','9':'----.'};
-  function morse(s){return normalize(s).split('').map(ch=>ch===' '?'|':MORSE[ch]||'').join(' ')}
-  const PB='ABCDEFGHIKLMNOPQRSTUVWXYZ';
-  function polybius(s){return normalize(s).replace(/J/g,'I').split('').filter(ch=>AZ.includes(ch)).map(ch=>{const i=PB.indexOf(ch);return `${Math.floor(i/5)+1}${i%5+1}`}).join(' ')}
-  function vigenere(s,key){s=normalize(s);key=normalize(key).replace(/ /g,'')||'ORION';let j=0,out='';for(const ch of s){const i=AZ.indexOf(ch);if(i<0){out+=ch;continue}const k=AZ.indexOf(key[j++%key.length]);out+=AZ[(i+k)%26]}return out}
-  function binary(s){return normalize(s).split('').map(ch=>ch===' '?'':(AZ.indexOf(ch)+1).toString(2).padStart(5,'0')).filter(Boolean).join(' ')}
-  function acrostic(s){const words=['Não descarte esta linha.','Observe com calma.','Registre a posição.','Tente outra leitura.','Evite pressupostos.','Leia apenas o necessário.','Anote o resultado.','Mantenha a ordem.','Ignore o ruído.','Siga o padrão.'];return normalize(s).replace(/ /g,'').split('').map((ch,i)=>ch+' — '+words[i%words.length]).join('\n')}
-  function periodic(s,seed){const r=D().rngFrom(seed),a=normalize(s).replace(/ /g,'').split(''),noise='QXZKJWV';let out=[];for(const ch of a){out.push(noise[Math.floor(r()*noise.length)],noise[Math.floor(r()*noise.length)],ch)}return out.join('')}
-  function oddEven(s,seed){const r=D().rngFrom(seed),noise='QXZKJWV',a=normalize(s).replace(/ /g,'').split('');let out=[];for(const ch of a){out.push(ch,noise[Math.floor(r()*noise.length)])}return out.join('')}
-  function prime(s,seed){const ans=normalize(s).replace(/ /g,'');const primes=[2,3,5,7,11,13,17,19,23,29,31,37,41,43,47];const n=primes[Math.min(ans.length-1,primes.length-1)]+2,r=D().rngFrom(seed),noise='QXZKJWV';let arr=Array.from({length:n},()=>noise[Math.floor(r()*noise.length)]);for(let i=0;i<ans.length&&i<primes.length;i++)arr[primes[i]-1]=ans[i];return arr.join('')}
-  function timeSeq(answer){const m=/^(\d\d):(\d\d)$/.exec(answer);let target=m?+m[1]*60 + +m[2]:21*60;const d=15;const vals=[target-2*d,target-d,null,target+d];const f=v=>`${String(Math.floor(v/60)).padStart(2,'0')}:${String(v%60).padStart(2,'0')}`;return `${f(vals[0])}  →  ${f(vals[1])}  →  ?  →  ${f(vals[3])}`}
-  function coords(answer,seed){const r=D().rngFrom(seed),labels=['A1','B1','C1','A2','B2','C2','A3','B3','C3'],pick=labels[Math.floor(r()*labels.length)];return {code:pick,cells:labels.map((k,i)=>({k,value:k===pick?answer:['Depósito','Hall','Arquivo','Sala 1','Pátio','Copa','Sala 3','Recepção'][i%8]}))}}
-  function evidenceModel(answer,tech,seed){const t=typeof tech==='string'?tech:tech.id;let m={type:t,answer,seed};switch(t){case'caesar':m.text=caesar(answer,3);m.meta='Interceptação textual';break;case'a1z26':m.text=a1z26(answer);m.meta='Registro numérico';break;case'acrostic':m.text=acrostic(answer);m.meta='Relatório transcrito';break;case'periodic':m.text=periodic(answer,seed);m.meta='Pacote de caracteres';break;case'oddEven':m.text=oddEven(answer,seed);m.meta='Fluxo intercalado';break;case'morse':m.text=morse(answer);m.meta='Sinal pulsado';break;case'polybius':m.text=polybius(answer);m.meta='Pares de coordenadas';break;case'coords':Object.assign(m,coords(answer,seed));m.meta='Mapa indexado';break;case'vigenere':m.key='ORION';m.keyFragment=a1z26(m.key);m.text=vigenere(answer,m.key);m.meta='Mensagem com chave';break;case'binary':m.text=binary(answer);m.meta='Blocos binários';break;case'prime':m.text=prime(answer,seed);m.meta='Amostra indexada';break;case'time':m.text=timeSeq(answer);m.meta='Linha temporal';break;case'noise':m.image=V().visualData(answer,seed,'noise');m.meta='Registro visual degradado';break;case'color':m.image=V().visualData(answer,seed,'color');m.meta='Registro multiespectral';break;default:m.text=normalize(answer);m.meta='Registro bruto'}return m}
-  function drawMorseWave(x,code,xx,yy,w){const tokens=code.split(/\s+/);let cx=mm(xx),cy=mm(yy),max=mm(xx+w),base=cy+mm(8);x.strokeStyle='#7fc6d4';x.lineWidth=3;for(const tok of tokens){if(tok==='|'){cx+=mm(10);continue}for(const s of tok){const len=s==='.'?mm(4):mm(10);if(cx+len>max){cx=mm(xx);base+=mm(18)}x.beginPath();x.moveTo(cx,base);x.lineTo(cx+len,base);x.stroke();cx+=len+mm(2)}cx+=mm(6)}}
-  async function casePdf(caseData){const drawers=[],logo=await asset('dicc_logo_clean.png');const id='DICC-AZ-'+String(caseData.seed).slice(-8).padStart(8,'0');drawers.push({draw:async x=>{await header(x,id,1);titleBlock(x,'DOSSÊ OPERACIONAL — CASO GERADO');section(x,1,'MISSÃO',126);text(x,'Reconstrua seis elementos da ocorrência: pessoa, local, instrumento, motivo, horário e rota. Cada resposta corresponde a uma carta física. O método de resolução não acompanha a evidência; consulte o Arquivo de Referência Técnica quando necessário.',mm(22),mm(137),mm(160),2.7);x.fillStyle='#74581f';x.fillRect(mm(22),mm(166),mm(160),mm(18));text(x,'Se uma evidência apontar para um FRAGMENTO K, resolva primeiro a página intermediária. A palavra-passe do próximo enigma nunca é fornecida diretamente.',mm(25),mm(170),mm(154),2.45,true,'#fff7dc');section(x,2,'PROTOCOLO',197);text(x,'1. Resolva as páginas na ordem apresentada.\n2. Selecione a carta correspondente a cada resposta.\n3. Posicione as seis cartas no Quadro de Reconstrução.\n4. Registre a palavra formada pelos fragmentos das cartas.',mm(22),mm(207),mm(158),2.6,false,C.ink,1.55);footer(x,id+'-000')}});
-    let pno=2;
-    for(const item of caseData.techniques){const ans=caseData.solution[item.category].name,m=evidenceModel(ans,item.technique,caseData.seed+'|'+item.category);if(m.type==='vigenere'){drawers.push({draw:async x=>{await header(x,id+'-K',pno++);titleBlock(x,'FRAGMENTO K — CHAVE INTERMEDIÁRIA');section(x,1,'IDENTIFICAÇÃO',126);text(x,'REGISTRO: K-'+item.category.toUpperCase()+'\nORIGEM: material associado à evidência seguinte\nINTEGRIDADE: preservada',mm(22),mm(138),mm(156),2.5,false,C.ink,1.5);section(x,2,'CONTEÚDO RECUPERADO',166);text(x,m.keyFragment,mm(35),mm(182),mm(130),6,true);text(x,'Resolva este fragmento antes de retornar à evidência principal. O resultado é a palavra-passe.',mm(22),mm(207),mm(156),2.5,false,C.muted);footer(x,id+'-K01')}})}
-      const localP=pno++;drawers.push({draw:async x=>{await header(x,id+'-'+String(localP).padStart(2,'0'),localP);titleBlock(x,'ANEXO — '+m.meta.toUpperCase());section(x,1,'IDENTIFICAÇÃO DA EVIDÊNCIA',126);box(x,22,137,160,31);text(x,`REGISTRO: AZ-${String(localP).padStart(2,'0')}\nCATEGORIA: ${D().labels[item.category]}\nINTEGRIDADE: preservada`,mm(26),mm(141),mm(150),2.35,false,C.ink,1.55);section(x,2,'CONTEÚDO RECUPERADO',179);if(m.image){const im=await img(m.image);x.drawImage(im,mm(28),mm(191),mm(148),mm(53));text(x,m.type==='color'?'Registro multiespectral: canais preservados de forma desigual.':'Registro degradado por ruído de alta frequência.',mm(46),mm(247),mm(112),2,false,C.muted)}else if(m.type==='morse'){x.fillStyle='#07161d';x.fillRect(mm(28),mm(191),mm(148),mm(53));drawMorseWave(x,m.text,34,196,136)}else if(m.type==='coords'){box(x,45,191,120,52);const cs=m.cells;for(let i=0;i<9;i++){const r=Math.floor(i/3),c=i%3;box(x,52+c*35,196+r*14,32,12);text(x,cs[i].k,mm(54+c*35),mm(198+r*14),mm(8),1.8,true,C.gold);text(x,cs[i].value,mm(62+c*35),mm(198+r*14),mm(20),1.8)}text(x,'COORDENADA RECUPERADA: '+m.code,mm(52),mm(240),mm(110),2.5,true)}else{text(x,m.text,mm(30),mm(195),mm(145),m.text.length>90?2.6:m.text.length>45?3.3:5.2,true,C.ink,m.text.includes('\n')?1.45:1.35)}section(x,3,'CONCLUSÃO DA EQUIPE',248);box(x,22,258,160,10);text(x,'RESPOSTA:',mm(26),mm(261),mm(30),2,true,C.muted);footer(x,id+'-'+String(localP).padStart(3,'0'))}})}
-    drawers.push({orientation:'landscape',draw:async x=>{x.fillStyle=C.ink;x.font=font(7,true,true);x.fillText('QUADRO DE RECONSTRUÇÃO',mm(14),mm(12));text(x,'POSICIONE FISICAMENTE AS SEIS CARTAS NOS CAMPOS ABAIXO',mm(14),mm(23),mm(180),2,false,C.muted);text(x,'PALAVRA DE VERIFICAÇÃO: _______________________________',mm(195),mm(18),mm(85),2.2,true);const cats=D().categories;for(let i=0;i<6;i++){const col=i%3,row=Math.floor(i/3),xx=30+col*70,yy=35+row*92;box(x,xx,yy,63,88);x.fillStyle=C.navy;x.fillRect(mm(xx),mm(yy),mm(63),mm(9));text(x,`${i+1}. ${D().labels[cats[i]]}`,mm(xx+3),mm(yy+2.4),mm(55),2.2,true,'#fff');text(x,'POSICIONE A CARTA AQUI',mm(xx+14),mm(yy+42),mm(36),1.8,false,C.muted)}}});
-    drawers.push({draw:async x=>{await header(x,id+'-MED','FINAL','RESTRITO AO MEDIADOR');titleBlock(x,'GABARITO DO MEDIADOR — NÃO ENTREGAR DURANTE A RESOLUÇÃO');section(x,1,'RECONSTRUÇÃO CORRETA',126);let y=140;for(let i=0;i<6;i++){const cat=D().categories[i],it=caseData.techniques[i],ans=caseData.solution[cat].name;x.fillStyle=i%2?C.cream:'#e4dfd4';x.fillRect(mm(22),mm(y),mm(160),mm(13));text(x,String(i+1),mm(25),mm(y+4),mm(7),2.2,true,'#fff');x.fillStyle=C.navy;x.fillRect(mm(22),mm(y),mm(10),mm(13));text(x,D().labels[cat],mm(36),mm(y+4),mm(33),2,true);text(x,ans,mm(73),mm(y+4),mm(63),2.2,true);text(x,(D().implemented.find(t=>t.id===it.technique)||{name:it.technique}).name,mm(139),mm(y+4),mm(40),1.8,false,C.muted);y+=16}x.fillStyle=C.navy;x.fillRect(mm(22),mm(y+2),mm(160),mm(14));text(x,'PALAVRA DE VERIFICAÇÃO',mm(26),mm(y+6),mm(80),2.2,true,'#fff');text(x,caseData.verification,mm(150),mm(y+5),mm(27),3.8,true,C.gold);footer(x,id+'-MED')}});
-    return await pdfFromDrawers(drawers,.9)
+  const D=()=>global.MnemosineData,K=()=>global.MnemosineCore;
+  const SRC=(typeof document!=='undefined'&&document.currentScript&&document.currentScript.src)||null;
+  const FAM={
+    mono:'"Courier Prime","Courier New",Courier,monospace',
+    serif:'"Libre Baskerville",Georgia,"Times New Roman",serif',
+    stamp:'"Special Elite","Courier Prime","Courier New",monospace'
+  };
+  const PAL={
+    color:{paper:'#eee9dc',ink:'#222',navy:'#233d4d',navyInk:'#fff',muted:'#6a665e',line:'#817b70',gold:'#b78b35',red:'#a73732',blue:'#c9d5dc',cream:'#f7f2e6',dark:'#0d181d',term:'#86e7ae',scope:'#7fd8e8',green:'#3b7865',warn:'#7a5a20'},
+    eco:{paper:'#ffffff',ink:'#111',navy:'#e4e4e4',navyInk:'#111',muted:'#555',line:'#777',gold:'#444',red:'#222',blue:'#eee',cream:'#fff',dark:'#f3f3f3',term:'#111',scope:'#111',green:'#333',warn:'#ddd'}
+  };
+  const C=Object.assign({},PAL.color),st={dpi:300,S:300/25.4,eco:false},stats={overflow:[]};
+  const mm=n=>n*st.S, pad2=n=>String(n).padStart(2,'0');
+  function configure(o={}){if(o.dpi){st.dpi=o.dpi;st.S=o.dpi/25.4}if('eco' in o){st.eco=!!o.eco;Object.assign(C,st.eco?PAL.eco:PAL.color)}}
+
+  // ---------- fontes ----------
+  let fontsReady=null;
+  function loadFonts(){
+    if(fontsReady)return fontsReady;
+    if(typeof FontFace==='undefined'||!SRC)return (fontsReady=Promise.resolve(false));
+    const b=new URL('../fonts/',SRC).href;
+    const defs=[['Courier Prime','CourierPrime-Regular.ttf','400'],['Courier Prime','CourierPrime-Bold.ttf','700'],['Libre Baskerville','LibreBaskerville-Variable.ttf','400 700'],['Special Elite','SpecialElite-Regular.ttf','400']];
+    fontsReady=Promise.all(defs.map(async([fam,file,w])=>{try{const f=new FontFace(fam,`url(${b+file})`,{weight:w});await f.load();document.fonts.add(f);return true}catch(e){console.warn('Fonte indisponível',file,e);return false}})).then(r=>r.every(Boolean));
+    return fontsReady;
   }
-  async function ambientPdf(){const persons=[{id:'PV',name:'Aurora Vale',asset:'Aurora_Vale.jpg',role:'Vítima / criptógrafa'},...D().cards.pessoa],logo=await asset('dicc_logo_clean.png'),drawers=[];drawers.push({draw:async x=>{await header(x,'DICC-MNMS-AZ-BASE',1);titleBlock(x,'DOSSÊ DE AMBIENTAÇÃO — INSTITUTO ORION');section(x,1,'RESUMO DO INCIDENTE',126);text(x,'A professora e criptógrafa Aurora Vale, coordenadora do Projeto Mnemosine no Instituto Orion, vinha registrando inconsistências em acessos, contratos e rotas internas. Antes de uma reunião em que pretendia apresentar parte de suas descobertas, desapareceu. O arquivo físico e digital do instituto passou a apresentar lacunas, documentos duplicados, horários conflitantes e mensagens codificadas.',mm(22),mm(138),mm(158),2.7);section(x,2,'O QUE JÁ É COMUM A TODOS OS CASOS',175);const lines=['Aurora antecipou a possibilidade de adulteração de evidências e distribuiu informações em mídias diferentes.','Há registros confiáveis de que mais de uma pessoa possuía motivos para esconder informações, mas isso não implica autoria de crime.','O D.I.C.C. mantém um conjunto fixo de pessoas, locais, instrumentos, motivos, horários e rotas para reconstruções operacionais.','As páginas de caso podem usar cifras, códigos e sinais visuais. Quando uma técnica exigir palavra-passe, ela deve ser descoberta em um fragmento anterior.'];let y=188;lines.forEach((z,i)=>{x.fillStyle=C.navy;x.beginPath();x.arc(mm(25),mm(y+3),mm(3),0,Math.PI*2);x.fill();text(x,String(i+1),mm(24),mm(y+1.6),mm(4),1.6,true,'#fff');text(x,z,mm(34),mm(y),mm(145),2.35);y+=19});section(x,3,'PROTOCOLO MNEMOSINE',245);text(x,'Nenhuma informação crítica deve depender de uma única pista. A equipe deve observar o documento, identificar um padrão provável, consultar o Arquivo de Referência Técnica quando necessário e só então associar a resposta a uma carta física do Quadro de Reconstrução.',mm(22),mm(255),mm(158),2.35);footer(x,'MNMS-AZ-AMB-001')}});for(let pg=0;pg<2;pg++){drawers.push({draw:async x=>{await header(x,'DICC-MNMS-AZ-BASE',pg+2);titleBlock(x,'PESSOAS DE INTERESSE — PARTE '+(pg+1));const slice=persons.slice(pg*3,pg*3+3);let y=130;for(const p of slice){const im=await asset(p.asset);box(x,22,y,160,42);if(im)x.drawImage(im,mm(26),mm(y+4),mm(32),mm(34));text(x,p.name,mm(64),mm(y+7),mm(110),3,true);text(x,p.role||'',mm(64),mm(y+17),mm(110),2,false,C.muted);const desc={PV:'Coordenadora do Projeto Mnemosine. Metódica, desconfiada de registros únicos e responsável por mecanismos de autenticação.',P1:'Conhecia a infraestrutura técnica e auxiliava Aurora em preservação digital.',P2:'Tinha acesso amplo a documentos administrativos e enfrentava pressões institucionais.',P3:'Circulava entre áreas administrativas e técnicas e lidava com contratos sensíveis.',P4:'Acompanhava irregularidades e reunia documentos de origem nem sempre revelada.',P5:'Conhece rotas, câmeras, horários e acessos físicos do instituto.'}[p.id];text(x,desc,mm(64),mm(y+25),mm(110),2.1);y+=48}footer(x,'MNMS-AZ-AMB-00'+(pg+2))}})}drawers.push({draw:async x=>{await header(x,'DICC-MNMS-AZ-BASE',4);titleBlock(x,'RECURSOS OPERACIONAIS DO ARQUIVO ZERO');section(x,1,'CONJUNTO FIXO',126);text(x,'O baralho físico reúne 30 cartas: 5 pessoas, 5 locais, 5 instrumentos, 5 motivos, 5 horários e 5 rotas. Casos diferentes podem chegar à mesma solução usando enigmas distintos.',mm(22),mm(139),mm(158),2.7);section(x,2,'MÉTODO DE JOGO',172);text(x,'Resolva a evidência → identifique a resposta → encontre a carta física correspondente → posicione-a no quadro. A combinação final das seis cartas forma uma palavra de verificação por meio dos fragmentos impressos.',mm(22),mm(184),mm(158),2.7);section(x,3,'ARQUIVO DE REFERÊNCIA',217);text(x,'Consultar o arquivo técnico é permitido e não conta como pista. O desafio inclui reconhecer qual técnica pode estar escondida na evidência. Pistas específicas do mediador podem ser penalizadas por tempo.',mm(22),mm(229),mm(158),2.7);footer(x,'MNMS-AZ-AMB-004')}});return pdfFromDrawers(drawers,.9)}
-  async function cardsPdf(){const all=D().categories.flatMap(c=>D().cards[c].map(v=>({...v,category:c}))),drawers=[];for(let start=0;start<all.length;start+=9){drawers.push({draw:async x=>{for(let j=0;j<9&&start+j<all.length;j++){const card=all[start+j],col=j%3,row=Math.floor(j/3),xx=12+col*66,yy=12+row*91;box(x,xx,yy,63,88);const logo=await asset('dicc_logo_clean.png');if(logo)x.drawImage(logo,mm(xx+4),mm(yy+4),mm(13),mm(16));text(x,'D.I.C.C. // ARQUIVO ZERO',mm(xx+20),mm(yy+6),mm(35),1.8,true);const im=await asset(card.asset);if(im)x.drawImage(im,mm(xx+4),mm(yy+24),mm(55),mm(35));x.fillStyle=C.navy;x.fillRect(mm(xx+4),mm(yy+59),mm(55),mm(8));text(x,D().labels[card.category],mm(xx+6),mm(yy+61),mm(32),1.8,true,'#fff');text(x,card.id,mm(xx+50),mm(yy+61),mm(8),1.8,true,C.gold);text(x,card.name,mm(xx+4),mm(yy+70),mm(50),2.4,true,C.ink,1.2,true);text(x,'FRAGMENTO',mm(xx+4),mm(yy+81),mm(26),1.4,false,C.muted);box(x,xx+51,yy+76,8,8,null,C.gold);text(x,card.frag,mm(xx+53),mm(yy+77.5),mm(4),3,true)}}});drawers.push({draw:async x=>{for(let j=0;j<9&&start+j<all.length;j++){const col=j%3,row=Math.floor(j/3),xx=12+col*66,yy=12+row*91;box(x,xx,yy,63,88);const logo=await asset('dicc_logo_clean.png');if(logo)x.drawImage(logo,mm(xx+19),mm(yy+8),mm(25),mm(31));x.fillStyle=C.navy;x.fillRect(mm(xx+7),mm(yy+47),mm(49),mm(14));text(x,'CASO MNEMOSINE',mm(xx+12),mm(yy+51),mm(40),3,true,'#fff',1.2,true);text(x,'ARQUIVO ZERO // D.I.C.C.',mm(xx+14),mm(yy+66),mm(36),1.6,false,C.muted)}}})}drawers.push({orientation:'landscape',draw:async x=>{x.font=font(7,true,true);x.fillStyle=C.ink;x.fillText('QUADRO DE RECONSTRUÇÃO',mm(14),mm(12));text(x,'POSICIONE AS SEIS CARTAS OBTIDAS NOS CAMPOS ABAIXO',mm(14),mm(23),mm(160),2,false,C.muted);const cats=D().categories;for(let i=0;i<6;i++){const col=i%3,row=Math.floor(i/3),xx=30+col*70,yy=35+row*92;box(x,xx,yy,63,88);x.fillStyle=C.navy;x.fillRect(mm(xx),mm(yy),mm(63),mm(9));text(x,`${i+1}. ${D().labels[cats[i]]}`,mm(xx+3),mm(yy+2.4),mm(55),2.2,true,'#fff')}}});return pdfFromDrawers(drawers,.88)}
-  async function referencePdf(){const drawers=[],impl=D().implemented;drawers.push({draw:async x=>{await header(x,'DICC-REF-AZ-2026',1,'ARQUIVO DE REFERÊNCIA');titleBlock(x,'MANUAL DE CONSULTA — USO EM CAMPO');section(x,1,'FINALIDADE',126);text(x,'Este arquivo ensina métodos gerais usados nos casos do Arquivo Zero. Ele não informa qual método corresponde a cada evidência. A tarefa da equipe é reconhecer o padrão, consultar a seção adequada e voltar ao documento original.',mm(22),mm(138),mm(158),2.7);section(x,2,'FAMÍLIAS DE TÉCNICAS',174);const fam=[['Cifras','César e Vigenère'],['Códigos','A1Z26, Morse, Polybius e binário'],['Estrutura textual','acróstico, amostragem, ímpares/pares e posições primas'],['Raciocínio','coordenadas e sequências temporais'],['Percepção visual','ruído de alta frequência e canais de cor']];let y=188;fam.forEach((a,i)=>{x.fillStyle=C.navy;x.beginPath();x.arc(mm(25),mm(y+2),mm(3),0,Math.PI*2);x.fill();text(x,String(i+1),mm(24),mm(y+.8),mm(4),1.5,true,'#fff');text(x,`${a[0]}: ${a[1]}.`,mm(34),mm(y),mm(145),2.35);y+=16});footer(x,'MNMS-AZ-REF-001')}});
-    drawers.push({draw:async x=>{await header(x,'DICC-REF-AZ-2026',2,'ARQUIVO DE REFERÊNCIA');titleBlock(x,'CÉSAR E A1Z26');section(x,'2.1','CIFRA DE CÉSAR',126);text(x,'Cada letra é deslocada sempre a mesma quantidade. Se a mensagem foi cifrada com +3, para decifrar volte 3 casas. O alfabeto é circular.',mm(22),mm(139),mm(158),2.6);text(x,'CASA  +3  →  FDVD',mm(42),mm(166),mm(120),5,true);text(x,'FDVD → voltar 3 casas → CASA',mm(42),mm(181),mm(120),2.6,true);section(x,'2.2','A1Z26 / POSIÇÃO NO ALFABETO',205);text(x,'A=1, B=2, C=3 ... Z=26. Converta cada número separadamente.',mm(22),mm(218),mm(158),2.6);text(x,'12   21   16   1    →    L U P A',mm(36),mm(245),mm(140),4.2,true);footer(x,'MNMS-AZ-REF-002')}});
-    drawers.push({draw:async x=>{await header(x,'DICC-REF-AZ-2026',3,'ARQUIVO DE REFERÊNCIA');titleBlock(x,'ESTRUTURA OCULTA E FILTROS TEXTUAIS');section(x,'3.1','ACRÓSTICO',126);text(x,'Verifique iniciais ou finais de linhas, frases ou itens. Letras sucessivas podem formar uma palavra.',mm(22),mm(139),mm(158),2.5);text(x,'N  Não feche a porta.\nO  Observe a janela.\nR  Registre ruídos.\nT  Teste hipóteses.\nE  Evite pressa.',mm(34),mm(158),mm(120),2.5,false,C.ink,1.7);section(x,'3.2','AMOSTRAGEM PERIÓDICA',204);text(x,'Numere as posições a partir de 1 e teste cada 2ª, 3ª ou 4ª posição. Se houver repetição regular, o intervalo costuma ser constante.',mm(22),mm(217),mm(158),2.5);section(x,'3.3','ÍMPARES / PARES E POSIÇÕES PRIMAS',244);text(x,'Intercalações podem esconder mensagem nas posições 1,3,5... ou 2,4,6.... Outro filtro usa índices primos: 2,3,5,7,11,13...',mm(22),mm(257),mm(158),2.5);footer(x,'MNMS-AZ-REF-003')}});
-    drawers.push({draw:async x=>{await header(x,'DICC-REF-AZ-2026',4,'ARQUIVO DE REFERÊNCIA');titleBlock(x,'CÓDIGO MORSE — PONTOS, TRAÇOS E PULSOS');section(x,'4.1','RECONHECIMENTO',126);text(x,'Pontos e traços — ou pulsos curtos e longos — representam caracteres. Cada grupo corresponde a uma letra; um intervalo maior separa letras.',mm(22),mm(139),mm(158),2.6);const pairs=Object.entries(MORSE).filter(([k])=>/[A-Z]/.test(k));let y=163;for(let i=0;i<pairs.length;i++){const col=i%4,row=Math.floor(i/4),xx=25+col*42,yy=y+row*12;box(x,xx,yy,38,9);x.fillStyle=C.navy;x.fillRect(mm(xx),mm(yy),mm(9),mm(9));text(x,pairs[i][0],mm(xx+3),mm(yy+2.2),mm(4),2.2,true,'#fff');text(x,pairs[i][1],mm(xx+13),mm(yy+2.2),mm(22),2.2,true)}section(x,'4.2','EXEMPLO VISUAL',242);x.fillStyle='#07161d';x.fillRect(mm(30),mm(253),mm(145),mm(16));drawMorseWave(x,'... --- ...',35,253,135);footer(x,'MNMS-AZ-REF-004')}});
-    drawers.push({draw:async x=>{await header(x,'DICC-REF-AZ-2026',5,'ARQUIVO DE REFERÊNCIA');titleBlock(x,'POLYBIUS E COORDENADAS');section(x,'5.1','QUADRADO DE POLYBIUS 5×5',126);const g='ABCDEFGHIKLMNOPQRSTUVWXYZ';for(let r=0;r<5;r++)for(let c=0;c<5;c++){box(x,35+c*20,145+r*16,18,14);text(x,`${r+1}${c+1}`,mm(37+c*20),mm(147+r*16),mm(5),1.7,true,C.gold);text(x,g[r*5+c],mm(45+c*20),mm(149+r*16),mm(5),3,true)}text(x,'O primeiro dígito indica a linha e o segundo a coluna. I/J compartilham a mesma célula.',mm(22),mm(230),mm(158),2.5);section(x,'5.2','COORDENADAS EM MAPA',250);text(x,'Em mapas quadriculados, a letra pode indicar a coluna e o número a linha. Leia a própria planta para descobrir o conteúdo da célula.',mm(22),mm(263),mm(158),2.5);footer(x,'MNMS-AZ-REF-005')}});
-    drawers.push({draw:async x=>{await header(x,'DICC-REF-AZ-2026',6,'ARQUIVO DE REFERÊNCIA');titleBlock(x,'VIGENÈRE E BINÁRIO');section(x,'6.1','VIGENÈRE',126);text(x,'A cifra usa uma palavra-chave repetida. Converta A=0 ... Z=25. Para decifrar, subtraia o valor da chave do valor cifrado e use módulo 26. No Arquivo Zero a chave nunca é fornecida diretamente: um Fragmento K anterior deve revelá-la.',mm(22),mm(139),mm(158),2.55);box(x,30,172,150,43);text(x,'CIFRADO     X   U   P   L\nCHAVE       L   U   A   L\nVALORES    23  20  15  11\nSUBTRAIR   11  20   0  11\nRESULTADO   M   A   P   A',mm(36),mm(179),mm(138),2.7,true,C.ink,1.55);section(x,'6.2','BINÁRIO',229);text(x,'Uma sequência de 0 e 1 pode representar números. No jogo, blocos de 5 bits podem representar A=1 ... Z=26. Exemplo: 10101₂ = 21 → U.',mm(22),mm(242),mm(158),2.55);text(x,'16   8   4   2   1\n 1   0   1   0   1   = 21',mm(50),mm(263),mm(110),3.2,true);footer(x,'MNMS-AZ-REF-006')}});
-    drawers.push({draw:async x=>{await header(x,'DICC-REF-AZ-2026',7,'ARQUIVO DE REFERÊNCIA');titleBlock(x,'SEQUÊNCIAS E FILTROS NUMÉRICOS');section(x,'7.1','POSIÇÕES PRIMAS',126);text(x,'Selecione caracteres nas posições 2,3,5,7,11,13... O número 1 não é primo.',mm(22),mm(139),mm(158),2.6);text(x,'1  2  3  4  5  6  7\nX  M  A  Q  P  Z  A\n   ↑  ↑     ↑     ↑    → MAPA',mm(48),mm(160),mm(120),3.3,true,C.ink,1.6);section(x,'7.2','SEQUÊNCIA TEMPORAL',205);text(x,'Calcule a diferença entre termos consecutivos. Se o intervalo for constante, complete a lacuna.',mm(22),mm(218),mm(158),2.6);text(x,'08:10  →  08:25  →  ?  →  08:55\n            +15 min     +15 min\nResposta: 08:40',mm(36),mm(241),mm(140),3,true,true,C.ink,1.5);footer(x,'MNMS-AZ-REF-007')}});
-    drawers.push({draw:async x=>{await header(x,'DICC-REF-AZ-2026',8,'ARQUIVO DE REFERÊNCIA');titleBlock(x,'PERCEPÇÃO VISUAL — RUÍDO E CANAIS DE COR');section(x,'8.1','PALAVRA OCULTA EM RUÍDO',126);text(x,'Ruído de alta frequência pode esconder uma forma de baixa frequência. Afaste a folha, reduza a imagem ou semicerrar os olhos para perceber a média visual.',mm(22),mm(139),mm(158),2.5);const n=await img(V().visualData('MNEMOSINE','REF-NOISE','noise'));x.drawImage(n,mm(28),mm(160),mm(150),mm(45));section(x,'8.2','OCULTAÇÃO POR CANAIS DE COR',205);text(x,'O arquivo usa dithering vermelho/ciano com luminância média próxima. A palavra deve ficar pouco perceptível no original; isolar o canal vermelho em uma câmera/editor aumenta o contraste. Em impressão, use cor.',mm(22),mm(218),mm(158),2.5);const ci=await img(V().visualData('ARQUIVO','REF-COLOR','color'));x.drawImage(ci,mm(28),mm(238),mm(150),mm(27));footer(x,'MNMS-AZ-REF-008')}});return pdfFromDrawers(drawers,.9)}
-  async function mediatorPdf(){const drawers=[];const pages=[['VISÃO GERAL E PREPARAÇÃO','O Arquivo Zero usa um baralho fixo de 30 cartas e casos variáveis produzidos por enigmas. Antes da aula, imprima as cartas, o Quadro de Reconstrução e disponibilize o Arquivo de Referência Técnica. O Dossiê de Ambientação pode ser reutilizado em todas as partidas.'],['GERADOR v2.2 — PACK E CASOS','O botão GERAR PACK cria ou atualiza os PDFs-base em 01_Documentos. O botão de salvar caso grava o PDF em 02_Casos. A lista de casos mostra os PDFs já existentes na pasta.'],['REGRA DE PALAVRA-PASSE','Nenhuma cifra que exija palavra-passe recebe a chave diretamente. O gerador cria um FRAGMENTO K intermediário usando uma técnica mais simples; a equipe resolve o fragmento e só então usa o resultado na cifra principal.'],['ENIGMAS VISUAIS','Ruído visual: afastar ou reduzir a imagem. Canais de cor: o padrão usa dithering vermelho/ciano de contraste baixo e deve ser investigado isolando um canal de cor. Evite revelar o método antes da equipe tentar diagnosticar a evidência.'],['TÉCNICAS AVANÇADAS','Pigpen, Scytale, Base64, hexadecimal/ASCII, substituição monoalfabética, transposição colunar, book cipher, grade de Cardan e esteganografia em imagem aparecem no gerador como roadmap. Elas ficam desmarcadas por padrão até receberem implementação completa.']];for(let i=0;i<pages.length;i++){drawers.push({draw:async x=>{await header(x,'DICC-AZ-MED-2026',i+1,'RESTRITO AO MEDIADOR');titleBlock(x,pages[i][0]);section(x,1,'ORIENTAÇÃO',126);text(x,pages[i][1],mm(22),mm(140),mm(158),2.8);section(x,2,'NOTA OPERACIONAL',205);text(x,i===0?'A consulta ao Arquivo de Referência é livre e não conta como dica. Pistas específicas do professor podem receber penalidade de tempo se desejado.':i===1?'Os PDFs possuem nomes estáveis, sem número de versão no caminho, para evitar links quebrados.':i===2?'Guarde a seed quando quiser reproduzir exatamente o mesmo caso.':i===3?'Para impressão, mantenha cores habilitadas nos enigmas de canais.': 'As técnicas avançadas aparecem para planejamento curricular, mas não são escolhidas automaticamente.',mm(26),mm(220),mm(150),2.55,false,C.ink,1.5);footer(x,'MNMS-AZ-MED-00'+(i+1))}})}return pdfFromDrawers(drawers,.9)}
-  async function blankPdf(){const drawers=[];drawers.push({draw:async x=>{await header(x,'DICC-AZ-MODELO',1,'MODELO DE AUTORIA');titleBlock(x,'MODELO EM BRANCO — PÁGINA DE EVIDÊNCIA');section(x,1,'IDENTIFICAÇÃO',126);box(x,22,139,160,36);section(x,2,'CONTEÚDO RECUPERADO',187);box(x,22,200,160,58);section(x,3,'CONCLUSÃO DA EQUIPE',247);box(x,22,258,160,10);footer(x,'MNMS-AZ-MODELO-001')}});drawers.push({orientation:'landscape',draw:async x=>{x.fillStyle=C.ink;x.font=font(7,true,true);x.fillText('QUADRO DE RECONSTRUÇÃO — MODELO',mm(14),mm(12));const cats=D().categories;for(let i=0;i<6;i++){const col=i%3,row=Math.floor(i/3),xx=30+col*70,yy=35+row*92;box(x,xx,yy,63,88);x.fillStyle=C.navy;x.fillRect(mm(xx),mm(yy),mm(63),mm(9));text(x,`${i+1}. ${D().labels[cats[i]]}`,mm(xx+3),mm(yy+2.4),mm(55),2.2,true,'#fff')}}});return pdfFromDrawers(drawers,.9)}
-  function compatibleTechniques(cat,selected){const bad=cat==='horario'?[]:['time'];return selected.filter(t=>!bad.includes(t))}
-  async function exampleCasesPdf(){const seeds=['A-ARQUIVO','B-BIBLIOTECA','C-LAB','D-SERVIDORES'],all=[];for(const s of seeds){const selected=D().implemented.map(t=>t.id),caseData=D().generate(s,selected);all.push({seed:s,caseData})}
-    const drawers=[];let pg=1;for(const e of all){drawers.push({draw:async x=>{await header(x,'DICC-AZ-EX-'+e.seed[0],pg++);titleBlock(x,'CASO DE EXEMPLO — '+e.seed);section(x,1,'SOLUÇÃO FIXADA PARA DEMONSTRAÇÃO',126);let y=140;D().categories.forEach((c,i)=>{text(x,`${i+1}. ${D().labels[c]}: ${e.caseData.solution[c].name}`,mm(26),mm(y),mm(150),2.7,true);y+=12});section(x,2,'TÉCNICAS ATRIBUÍDAS',220);y=233;e.caseData.techniques.forEach((t,i)=>{const n=D().implemented.find(q=>q.id===t.technique)?.name||t.technique;text(x,`${i+1}. ${D().labels[t.category]} — ${n}`,mm(26),mm(y),mm(150),2.4);y+=9});footer(x,'MNMS-AZ-EX-'+e.seed[0])}})}return pdfFromDrawers(drawers,.9)}
-  async function generatePack(){await MnemosineFS.ensureStructure();const docs=[['01_Dossie_de_Ambientacao_Arquivo_Zero.pdf',ambientPdf],['02_Casos_de_Exemplo.pdf',exampleCasesPdf],['03_Cartas_PnP.pdf',cardsPdf],['04_Arquivo_de_Referencia_Tecnica.pdf',referencePdf],['05_Manual_do_Mediador.pdf',mediatorPdf],['06_Modelo_de_Caso_em_Branco.pdf',blankPdf]];const out=[];for(const [name,fn] of docs){const b=await fn();await MnemosineFS.write('01_Documentos/'+name,b);out.push(name)}return out}
-  global.MnemosineRender={casePdf,generatePack,ambientPdf,cardsPdf,referencePdf,mediatorPdf,blankPdf,exampleCasesPdf,evidenceModel,compatibleTechniques,morse};
-})(window);
+
+  // ---------- medição / texto ----------
+  let M=null;const meas=()=>M||(M=document.createElement('canvas').getContext('2d'));
+  const tw=(t,size,bold,fam)=>{const m=meas();m.font=`${bold?700:400} ${size*20}px ${FAM[fam||'mono']}`;return m.measureText(t).width/20};
+  function wrap(t,W,size,bold,fam){
+    const out=[];
+    for(const para of String(t).split('\n')){
+      let line='';
+      for(let w of para.split(/ +/)){
+        while(tw(w,size,bold,fam)>W&&w.length>1){let k=w.length;while(k>1&&tw(w.slice(0,k),size,bold,fam)>W)k--;if(line){out.push(line);line=''}out.push(w.slice(0,k));w=w.slice(k)}
+        const z=line?line+' '+w:w;
+        if(line&&tw(z,size,bold,fam)>W){out.push(line);line=w}else line=z;
+      }
+      out.push(line);
+    }
+    return out;
+  }
+  const setFont=(x,size,o)=>{x.font=`${o.bold?700:400} ${size*st.S}px ${FAM[o.fam||'mono']}`};
+  /** Desenha texto com quebra automática. Retorna o Y (mm) logo abaixo da última linha. */
+  function text(x,t,X,Y,W,size,o={}){
+    o=Object.assign({lh:1.4,color:C.ink,align:'left',fam:'mono'},o);
+    setFont(x,size,o);x.fillStyle=o.color;x.textBaseline='top';x.textAlign=o.align;
+    const ax=o.align==='center'?X+W/2:o.align==='right'?X+W:X;let y=Y;
+    if(o.alpha!=null){x.save();x.globalAlpha=o.alpha}
+    for(const l of wrap(t,W,size,o.bold,o.fam)){x.fillText(l,mm(ax),mm(y));y+=size*o.lh}
+    if(o.alpha!=null)x.restore();
+    x.textAlign='left';
+    return y;
+  }
+  /** Maior tamanho (≤max, ≥min) que cabe em W×H. Registra estouro em stats.overflow. */
+  function fit(x,t,X,Y,W,H,max,min,o={}){
+    const lh=o.lh||1.4;let s=max;
+    for(;s>=min-1e-6;s-=.2){if(wrap(t,W,s,o.bold,o.fam).length*s*lh<=H)break}
+    if(s<min-1e-6){s=min;stats.overflow.push({label:o.label||'fit',text:String(t).slice(0,30)})}
+    const n=wrap(t,W,s,o.bold,o.fam).length,y0=o.vcenter?Y+Math.max(0,(H-n*s*lh)/2):Y;
+    return {size:s,bottom:text(x,t,X,y0,W,s,o),lines:n};
+  }
+  const lineHeight=(size,lh=1.4)=>size*lh;
+
+  // ---------- primitivas ----------
+  function rect(x,X,Y,W,H,o={}){if(o.fill){x.fillStyle=o.fill;x.fillRect(mm(X),mm(Y),mm(W),mm(H))}if(o.stroke){x.strokeStyle=o.stroke;x.lineWidth=mm(o.lw||.25);if(o.dash)x.setLineDash(o.dash.map(mm));x.strokeRect(mm(X),mm(Y),mm(W),mm(H));x.setLineDash([])}}
+  function rrect(x,X,Y,W,H,r,o={}){x.beginPath();x.moveTo(mm(X+r),mm(Y));x.arcTo(mm(X+W),mm(Y),mm(X+W),mm(Y+H),mm(r));x.arcTo(mm(X+W),mm(Y+H),mm(X),mm(Y+H),mm(r));x.arcTo(mm(X),mm(Y+H),mm(X),mm(Y),mm(r));x.arcTo(mm(X),mm(Y),mm(X+W),mm(Y),mm(r));x.closePath();if(o.fill){x.fillStyle=o.fill;x.fill()}if(o.stroke){x.strokeStyle=o.stroke;x.lineWidth=mm(o.lw||.25);x.stroke()}}
+  function line(x,x1,y1,x2,y2,color,lw=.25,dash){x.save();x.strokeStyle=color||C.line;x.lineWidth=mm(lw);if(dash)x.setLineDash(dash.map(mm));x.beginPath();x.moveTo(mm(x1),mm(y1));x.lineTo(mm(x2),mm(y2));x.stroke();x.restore()}
+  function circle(x,cx,cy,r,o={}){x.beginPath();x.arc(mm(cx),mm(cy),mm(r),0,Math.PI*2);if(o.fill){x.fillStyle=o.fill;x.fill()}if(o.stroke){x.strokeStyle=o.stroke;x.lineWidth=mm(o.lw||.25);if(o.dash)x.setLineDash(o.dash.map(mm));x.stroke();x.setLineDash([])}}
+  function stamp(x,label,cx,cy,deg,o={}){
+    const size=o.size||5,w=tw(label,size,false,'stamp')+7,h=size*1.9,col=o.color||C.red;
+    x.save();x.translate(mm(cx),mm(cy));x.rotate(deg*Math.PI/180);x.globalAlpha=o.alpha??(st.eco?.9:.6);x.strokeStyle=col;x.fillStyle=col;
+    x.lineWidth=mm(.8);x.strokeRect(mm(-w/2),mm(-h/2),mm(w),mm(h));x.lineWidth=mm(.3);x.strokeRect(mm(-w/2+1),mm(-h/2+1),mm(w-2),mm(h-2));
+    setFont(x,size,{fam:'stamp'});x.textAlign='center';x.textBaseline='middle';x.fillText(label,0,mm(.15));x.restore();
+  }
+  function tape(x,cx,cy,deg,w=22,h=6.5){if(st.eco)return;x.save();x.translate(mm(cx),mm(cy));x.rotate(deg*Math.PI/180);x.fillStyle='rgba(224,208,150,.72)';x.fillRect(mm(-w/2),mm(-h/2),mm(w),mm(h));x.strokeStyle='rgba(150,130,70,.35)';x.lineWidth=mm(.2);x.strokeRect(mm(-w/2),mm(-h/2),mm(w),mm(h));x.restore()}
+
+  // ---------- imagens ----------
+  const cache=new Map();
+  const loadImg=src=>new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=src});
+  async function asset(name){
+    if(cache.has(name))return cache.get(name);
+    try{const im=await loadImg(await global.MnemosineFS.assetDataURL(name));cache.set(name,im);return im}
+    catch(e){console.warn('Asset indisponível',name,e&&e.message);cache.set(name,null);return null}
+  }
+  /** Preenche W×H recortando (sem deformar). fy: foco vertical (0=topo). */
+  function cover(x,im,X,Y,W,H,o={}){
+    if(!im)return;const dr=W/H,sr=im.width/im.height;let sw=im.width,sh=im.height,sx=0,sy=0;
+    if(sr>dr){sw=im.height*dr;sx=(im.width-sw)*(o.fx??.5)}else{sh=im.width/dr;sy=(im.height-sh)*(o.fy??.5)}
+    x.save();x.imageSmoothingEnabled=o.smooth!==false;x.imageSmoothingQuality='high';x.drawImage(im,sx,sy,sw,sh,mm(X),mm(Y),mm(W),mm(H));x.restore();
+  }
+  function contain(x,im,X,Y,W,H,o={}){
+    if(!im)return null;const s=Math.min(W/im.width,H/im.height),w=im.width*s,h=im.height*s,dx=X+(W-w)/2,dy=Y+(H-h)/2;
+    x.save();x.imageSmoothingEnabled=o.smooth!==false;x.imageSmoothingQuality='high';x.drawImage(im,mm(dx),mm(dy),mm(w),mm(h));x.restore();return {X:dx,Y:dy,W:w,H:h};
+  }
+
+  // ---------- papel ----------
+  async function paper(x,w,h,key){
+    x.fillStyle=C.paper;x.fillRect(0,0,mm(w),mm(h));
+    if(st.eco)return;
+    const tex=await asset('aged_paper.png');
+    if(tex){x.save();x.globalCompositeOperation='multiply';x.globalAlpha=.3;if(w>h){x.translate(mm(w)/2,mm(h)/2);x.rotate(Math.PI/2);x.drawImage(tex,-mm(h)/2,-mm(w)/2,mm(h),mm(w))}else x.drawImage(tex,0,0,mm(w),mm(h));x.restore()}
+    const g=x.createRadialGradient(mm(w/2),mm(h/2),mm(Math.min(w,h)*.42),mm(w/2),mm(h/2),mm(Math.max(w,h)*.72));g.addColorStop(0,'rgba(120,95,50,0)');g.addColorStop(1,'rgba(120,95,50,.17)');x.fillStyle=g;x.fillRect(0,0,mm(w),mm(h));
+    const r=D().rngFrom('stain|'+key);                       // 1 mancha de café por página, determinística
+    const sx=25+r()*(w-50),sy=h*.55+r()*h*.3,sr=8+r()*5;x.save();x.strokeStyle='rgba(112,72,28,.10)';x.lineWidth=mm(.9);x.beginPath();x.arc(mm(sx),mm(sy),mm(sr),0,Math.PI*1.7);x.stroke();x.lineWidth=mm(.3);x.beginPath();x.arc(mm(sx),mm(sy),mm(sr-1.2),.3,Math.PI*1.4);x.stroke();x.restore();
+    line(x,0,h/3,w,h/3,'rgba(90,75,50,.10)',.35);line(x,0,h/3+.5,w,h/3+.5,'rgba(255,255,255,.35)',.3); // dobra
+    if(h>w)for(const hy of [h*.2,h*.5,h*.8]){circle(x,7,hy,2.6,{fill:'rgba(70,60,45,.22)'});circle(x,7,hy,2.6,{stroke:'rgba(255,255,255,.4)',lw:.3})}
+  }
+
+  // ---------- estrutura de página ----------
+  async function header(P,sub){
+    sub=sub||'ARQUIVO ZERO';const x=P.x,logo=await asset('dicc_logo_clean.png');
+    if(logo){x.save();x.imageSmoothingQuality='high';x.drawImage(logo,mm(16),mm(9),mm(15),mm(15*logo.height/logo.width));x.restore()}
+    text(x,'ESTADO DA REPÚBLICA FEDERATIVA DO BRASIL\nSECRETARIA DE SEGURANÇA PÚBLICA',35,9,102,2.3,{color:C.muted,lh:1.5});
+    text(x,'DEPARTAMENTO DE INVESTIGAÇÕES CRIMINAIS E COMBATE AO CRIME ORGANIZADO',35,17.5,102,2.9,{bold:true,lh:1.35});
+    text(x,'D.I.C.C. — UNIDADE DE ANÁLISE DE CASOS ESPECIAIS',35,27,102,2.2,{color:C.muted});
+    rect(x,142,9,52,22,{stroke:C.line,lw:.3});
+    text(x,'NÚMERO DO CASO',144.5,11,47,2.1,{color:C.muted});
+    text(x,P.id,144.5,14.8,47,3,{bold:true});
+    text(x,sub,144.5,20.2,47,2.1,{color:C.muted});
+    text(x,`PÁG. ${P.i+1}/${P.n}`,144.5,25.6,47,2.7,{bold:true});
+    line(x,16,35,194,35,C.ink,.4);
+  }
+  function strip(x,label,y=39){rect(x,16,y,178,9,{fill:C.navy});rect(x,16,y,2.2,9,{fill:C.gold});text(x,label,21,y+2.7,170,3.4,{bold:true,color:C.navyInk,fam:'mono'})}
+  function section(x,title,y,X=16,W=178){text(x,title,X,y,W,3.2,{bold:true});line(x,X,y+5.4,X+W,y+5.4,C.line,.3);return y+8.5}
+  function footer(P){
+    const x=P.x,h=P.h;line(x,16,h-24,194,h-24,C.line,.3);
+    rect(x,16,h-21,50,13,{fill:C.blue});text(x,'CÓDIGO DO ARQUIVO',18,h-19.6,46,2,{color:C.muted});text(x,P.code,18,h-14.6,46,2.8,{bold:true});
+    text(x,'CASO MNEMOSINE — DOCUMENTO FICCIONAL PARA ATIVIDADE EDUCACIONAL.\nNÃO REPRESENTA ÓRGÃO, SERVIDOR OU DOCUMENTO OFICIAL.',70,h-19.5,124,2.3,{color:C.muted,align:'right',lh:1.5});
+  }
+  async function chrome(P,label,sub){await header(P,sub);if(label)strip(P.x,label);footer(P)}
+  /** Tabela chave/valor em duas colunas. */
+  function kv(x,rows,X,Y,W,size=3.1,keyW=38){let y=Y;for(const [k,v] of rows){text(x,k,X,y,keyW,size-.3,{color:C.muted});const b=text(x,v,X+keyW,y,W-keyW,size,{bold:true});y=Math.max(b,y+size*1.4)+1.2}return y}
+  function bullets(x,items,X,Y,W,size=3.2,gap=1.8){let y=Y;items.forEach((t,i)=>{circle(x,X+2.4,y+size*.62,2.4,{fill:C.navy});text(x,String(i+1),X,y+size*.14,4.8,size*.78,{bold:true,color:C.navyInk,align:'center'});y=text(x,t,X+7,y,W-7,size)+gap});return y}
+
+  // ---------- motor de renderização ----------
+  const A4={portrait:[210,297],landscape:[297,210]};
+  /** pages: [{orientation?,sizeMm?,bleedMm?,paper?:false,code?,draw:async(P)=>void}] */
+  async function renderPages(pages,o={}){
+    configure(o);stats.overflow.length=0;await loadFonts();
+    const out=[],n=pages.length;
+    for(let i=0;i<n;i++){
+      const pg=pages[i],[w,h]=pg.sizeMm||A4[pg.orientation||'portrait'],c=document.createElement('canvas');
+      c.width=Math.round(w*st.S);c.height=Math.round(h*st.S);
+      const x=c.getContext('2d'),P={x,w,h,i,n,id:o.id||'DICC-MNMS-AZ-BASE',code:pg.code||`${o.id||'DICC-MNMS-AZ-BASE'}-${pad2(i+1)}`};
+      if(pg.paper!==false)await paper(x,w,h,(o.id||'')+i);
+      await pg.draw(P);
+      const meta={orientation:pg.orientation||'portrait',sizeMm:[w,h],bleedMm:pg.bleedMm||0};
+      if(o.encode){ // codifica já em JPEG e libera o canvas (a 300 DPI cada página usa ~35 MB)
+        const bytes=await global.MnemosinePDF.canvasToJpegBytes(c,o.quality??.92);out.push(Object.assign({bytes,width:c.width,height:c.height},meta));c.width=c.height=0;
+      }else out.push(Object.assign({canvas:c},meta));
+      if(o.onProgress)o.onProgress(i+1,n);
+      await new Promise(r=>setTimeout(r,0));
+    }
+    return out;
+  }
+  async function toPdf(items,o={}){return global.MnemosinePDF.canvasesToPdf(items,o.quality??.92,{title:o.title||'Mnemosine'})}
+  /** Renderiza páginas já codificadas e monta o PDF (uso de memória constante). */
+  async function pagesToPdf(pages,o={}){
+    const items=await renderPages(pages,Object.assign({},o,{encode:true}));
+    return global.MnemosinePDF.buildPdf(items.map(i=>({bytes:i.bytes,width:i.width,height:i.height,wMm:i.sizeMm[0],hMm:i.sizeMm[1],bleedMm:i.bleedMm})),{title:o.title||'Mnemosine'});
+  }
+
+  const kit={st,C,FAM,PAL,stats,mm,pad2,tw,wrap,text,fit,rect,rrect,line,circle,stamp,tape,asset,loadImg,cover,contain,paper,header,strip,section,footer,chrome,kv,bullets,configure,loadFonts};
+  global.MnemosineRender=Object.assign(global.MnemosineRender||{},{kit,renderPages,toPdf,pagesToPdf,configure,loadFonts,stats,A4});
+  if(typeof module!=='undefined'&&module.exports)module.exports=global.MnemosineRender;
+})(typeof window!=='undefined'?window:globalThis);

@@ -1,0 +1,16 @@
+{
+  "name": "mnemosine-arquivo-zero",
+  "version": "3.0.0",
+  "description": "Gerador de casos de investigação cifrada (Print & Play) — Mnemosine // Arquivo Zero",
+  "private": true,
+  "license": "UNLICENSED",
+  "scripts": {
+    "test": "node --test",
+    "test:logic": "node --test tests/core.test.mjs",
+    "test:render": "node --test tests/render.test.mjs"
+  },
+  "devDependencies": {
+    "canvas": "^3.1.0",
+    "jsdom": "^30.1.3"
+  }
+}
