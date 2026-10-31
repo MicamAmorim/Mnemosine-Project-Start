@@ -1,1 +1,103 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MNEMOSINE // ARQUIVO ZERO</title></head><body style="margin:0;background:#151a1d;color:white;font-family:system-ui"><p style="padding:24px">Carregando Gerador Mnemosine…</p><script>window.__MNEMO_V23_GZ='';</script><script src="generator_bundle/v23_01.js"></script><script src="generator_bundle/v23_02.js"></script><script src="generator_bundle/v23_03.js"></script><script src="generator_bundle/v23_04.js"></script><script src="generator_bundle/v23_05.js"></script><script src="generator_bundle/v23_06.js"></script><script src="generator_bundle/v23_07.js"></script><script src="generator_bundle/v23_boot.js"></script></body></html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mnemosine // Arquivo Zero — Gerador de Casos</title>
+<meta name="description" content="Gerador de casos de investigação cifrada para imprimir e jogar (Print & Play): dossiês, cartas, enigmas e gabarito do mediador.">
+<meta name="theme-color" content="#12171a">
+<meta property="og:title" content="Mnemosine // Arquivo Zero">
+<meta property="og:description" content="Gere casos de investigação cifrada prontos para imprimir: 30 cartas, 23 técnicas, álibis e gabarito.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23233d4d'/%3E%3Cpath d='M16 3l3.2 9.8L29 16l-9.8 3.2L16 29l-3.2-9.8L3 16l9.8-3.2z' fill='%23d4b36b'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/mnemosine.css">
+</head>
+<body>
+<a class="skip" href="#pages">Ir para as páginas</a>
+<header class="top">
+  <div class="brand"><img src="../04_Assets/dicc_logo_clean.png" alt="" width="34" height="41"><div><h1>MNEMOSINE <span>//</span> ARQUIVO ZERO</h1><p>Gerador de casos Print &amp; Play <em class="chip">v3.0</em></p></div></div>
+  <nav aria-label="Atalhos"><a href="Metodos_Mnemosine.html" target="_blank" rel="noopener">Guia de métodos</a><a href="Analisador_Esteganografia.html" target="_blank" rel="noopener">Analisador LSB</a></nav>
+</header>
+
+<div id="notice" class="notice" role="note" hidden>
+  <strong>Modo arquivo local.</strong> Para exibir as imagens, selecione a pasta raiz do projeto (a que contém <code>04_Assets</code>) ou abra por um servidor local (<code>npx serve</code>).
+  <button type="button" id="btnNoticeRoot" class="btn small">Escolher pasta do projeto</button>
+</div>
+
+<main class="app">
+  <aside class="panel" aria-label="Configuração do caso">
+    <section class="step" aria-labelledby="h-seed">
+      <h2 id="h-seed"><b>1</b> Caso</h2>
+      <label for="seed">Seed <small>(mesma seed + mesmas opções = mesmo caso)</small></label>
+      <div class="row"><input id="seed" type="text" autocomplete="off" spellcheck="false" placeholder="ex.: A-ARQUIVO ou deixe em branco"><button type="button" id="btnNewSeed" class="btn" title="Sorteia uma nova seed e gera o caso">Nova seed</button></div>
+    </section>
+
+    <section class="step" aria-labelledby="h-diff">
+      <h2 id="h-diff"><b>2</b> Dificuldade</h2>
+      <div class="presets" role="group" aria-label="Presets de dificuldade">
+        <button type="button" class="preset" data-preset="iniciante" aria-pressed="false">Iniciante</button>
+        <button type="button" class="preset" data-preset="intermediario" aria-pressed="false">Intermediário</button>
+        <button type="button" class="preset" data-preset="avancado" aria-pressed="false">Avançado</button>
+      </div>
+      <p id="presetNote" class="muted" aria-live="polite"></p>
+    </section>
+
+    <section class="step" aria-labelledby="h-tech">
+      <h2 id="h-tech"><b>3</b> Técnicas <span id="techCount" class="chip"></span></h2>
+      <details open><summary>Essenciais</summary><div id="techsEssential" class="techs" data-techs></div></details>
+      <details><summary>Avançadas</summary><div id="techsAdvanced" class="techs" data-techs></div></details>
+    </section>
+
+    <section class="step" aria-labelledby="h-opt">
+      <h2 id="h-opt"><b>4</b> Opções</h2>
+      <label class="chk"><input type="checkbox" id="optAlibis" checked><span>Camada dedutiva (quadro de álibis)</span></label>
+      <label class="chk"><input type="checkbox" id="optEco"><span>Modo econômico (P&amp;B, sem fundo)</span></label>
+    </section>
+
+    <section class="step actions" aria-labelledby="h-act">
+      <h2 id="h-act"><b>5</b> Gerar e exportar</h2>
+      <button type="button" id="btnGenerate" class="btn primary">Gerar caso</button>
+      <div class="grid2">
+        <button type="button" id="btnPdf" class="btn" data-needs-case disabled>Baixar PDF do caso</button>
+        <button type="button" id="btnZip" class="btn" data-needs-case disabled>Kit completo (ZIP)</button>
+        <button type="button" id="btnHtml" class="btn" data-needs-case disabled>HTML interativo</button>
+        <button type="button" id="btnLink" class="btn" data-needs-case disabled>Copiar link do caso</button>
+      </div>
+      <button type="button" id="btnPack" class="btn wide">Gerar PACK de documentos (ZIP)</button>
+      <details id="fsGroup" hidden>
+        <summary>Pasta do projeto (Chrome / Edge)</summary>
+        <div class="grid2">
+          <button type="button" id="btnRoot" class="btn">Escolher pasta</button>
+          <button type="button" id="btnFsCase" class="btn" data-needs-case disabled>Gravar caso</button>
+          <button type="button" id="btnFsPack" class="btn wide">Gravar PACK</button>
+        </div>
+        <ul id="casesList" class="cases" aria-label="Casos salvos"></ul>
+      </details>
+      <progress id="progress" max="1" value="0" hidden aria-label="Progresso"></progress>
+      <p id="status" class="muted" role="status" aria-live="polite"></p>
+    </section>
+  </aside>
+
+  <section class="stage" aria-label="Pré-visualização">
+    <div id="caseInfo" class="caseinfo" hidden></div>
+    <nav id="pageNav" class="pagenav" aria-label="Páginas do caso"></nav>
+    <div id="empty" class="empty"><img src="../04_Assets/dicc_logo_clean.png" alt="" width="64" height="77"><h2>Nenhum caso gerado</h2><p>Escolha a dificuldade e clique em <b>Gerar caso</b>. A pré-visualização usa o mesmo desenho do PDF final.</p></div>
+    <div id="pages" class="pages" tabindex="-1"></div>
+  </section>
+</main>
+<div id="toasts" class="toasts" aria-live="polite"></div>
+<noscript><p style="padding:2rem;color:#fff">Este gerador precisa de JavaScript.</p></noscript>
+
+<script src="js/mnemosine_fs.js"></script>
+<script src="js/mnemosine_pdf.js"></script>
+<script src="js/mnemosine_zip.js"></script>
+<script src="js/mnemosine_data.js"></script>
+<script src="js/mnemosine_core.js"></script>
+<script src="js/mnemosine_visuals.js"></script>
+<script src="js/mnemosine_morse_audio.js"></script>
+<script src="js/mnemosine_render.js"></script>
+<script src="js/mnemosine_evidence.js"></script>
+<script src="js/mnemosine_docs.js"></script>
+<script src="js/mnemosine_app.js"></script>
+</body>
+</html>
