@@ -1,15 +1,23 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "node build-static.mjs",
-  "outputDirectory": "public",
+  "framework": null,
+  "buildCommand": null,
+  "installCommand": null,
+  "outputDirectory": ".",
   "cleanUrls": false,
   "trailingSlash": false,
   "headers": [
     {
-      "source": "/03_Gerador/(.*)",
-      "headers": [
-        {"key": "Cache-Control", "value": "no-store, max-age=0"}
-      ]
+      "source": "/03_Gerador/(.*)\\.(html|js|css)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }]
+    },
+    {
+      "source": "/03_Gerador/fonts/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=604800, stale-while-revalidate=86400" }]
+    },
+    {
+      "source": "/04_Assets/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400, stale-while-revalidate=604800" }]
     }
   ]
 }

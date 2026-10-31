@@ -2,3 +2,5 @@
 01_Documentos/
 02_Casos/
 *.zip
+node_modules/
+tests/out/

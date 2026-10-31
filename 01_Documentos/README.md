@@ -1,3 +1,3 @@
 # Documentos gerados
 
-Esta pasta é criada/preenchida pelo botão **GERAR PACK**. Os PDFs não são versionados no repositório.
+Esta pasta é preenchida por **Gerar PACK > Gravar PACK** (Chrome/Edge) ou extraindo o ZIP do PACK. Os PDFs não são versionados no repositório.
