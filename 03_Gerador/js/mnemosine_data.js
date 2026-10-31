@@ -1,3 +1,6 @@
+/* Mnemosine // Arquivo Zero — dados do jogo (v3.0)
+ * Baralho fixo de 30 cartas, catálogo de técnicas, RNG determinístico e código de verificação.
+ * Funciona no navegador (window.MnemosineData) e no Node (require). */
 (function(global){
   const cards={
     pessoa:[
@@ -5,7 +8,7 @@
       {id:'P2',name:'Helena Barros',asset:'P2_portrait.jpg',frag:'S',role:'Gestão administrativa'},
       {id:'P3',name:'Tomás Albuquerque',asset:'P3_portrait.jpg',frag:'C',role:'Curadoria / gestão financeira'},
       {id:'P4',name:'Lígia Sampaio',asset:'P4_portrait.jpg',frag:'N',role:'Jornalista / investigadora externa'},
-      {id:'P5',name:'Mateus Diniz',asset:'P5_portrait.jpg',frag:'C',role:'Segurança patrimonial'}
+      {id:'P5',name:'Mateus Diniz',asset:'P5_portrait.jpg',frag:'T',role:'Segurança patrimonial'}
     ],
     local:[
       {id:'L1',name:'Arquivo Central',asset:'L1_arquivo.jpg',frag:'O'},
@@ -17,7 +20,7 @@
     instrumento:[
       {id:'I1',name:'Abridor de cartas',asset:'I1_abridor.jpg',frag:'R'},
       {id:'I2',name:'Estatueta metálica',asset:'I2_estatueta.jpg',frag:'G'},
-      {id:'I3',name:'Frasco químico',asset:'I3_frasco.jpg',frag:'R'},
+      {id:'I3',name:'Frasco químico',asset:'I3_frasco.jpg',frag:'E'},
       {id:'I4',name:'Cabo de energia',asset:'I4_cabo.jpg',frag:'A'},
       {id:'I5',name:'Chave inglesa',asset:'I5_chave.jpg',frag:'M'}
     ],
@@ -26,7 +29,7 @@
       {id:'M2',name:'Recuperar um arquivo',asset:'M2_arquivo.jpg',frag:'O'},
       {id:'M3',name:'Vingança pessoal',asset:'M3_vinganca.jpg',frag:'D'},
       {id:'M4',name:'Silenciar uma testemunha',asset:'M4_testemunha.jpg',frag:'I'},
-      {id:'M5',name:'Sabotar o projeto',asset:'M5_sabotagem.jpg',frag:'V'}
+      {id:'M5',name:'Sabotar o projeto',asset:'M5_sabotagem.jpg',frag:'L'}
     ],
     horario:[
       {id:'H1',name:'20:45',asset:'H1_timestamp.jpg',frag:'K'},
@@ -39,8 +42,8 @@
       {id:'R1',name:'Escada Norte',asset:'R1_escada_norte.jpg',frag:'A'},
       {id:'R2',name:'Elevador',asset:'R2_elevador.jpg',frag:'O'},
       {id:'R3',name:'Escada Sul',asset:'R3_escada_sul.jpg',frag:'S'},
-      {id:'R4',name:'Corredor de Manutenção',asset:'R4_manutencao.jpg',frag:'S'},
-      {id:'R5',name:'Saída Leste',asset:'R5_saida_leste.jpg',frag:'S'}
+      {id:'R4',name:'Corredor de Manutenção',asset:'R4_manutencao.jpg',frag:'E'},
+      {id:'R5',name:'Saída Leste',asset:'R5_saida_leste.jpg',frag:'N'}
     ]
   };
   const categories=['pessoa','local','instrumento','motivo','horario','rota'];
@@ -73,13 +76,25 @@
     {id:'stegimage',name:'Esteganografia em imagem (LSB)',family:'Esteganografia',implemented:true,digital:true}
   ];
   const allTechniques=[...implemented,...advanced];
+  const presets={
+    iniciante:['caesar','a1z26','morse','polybius','coords','time','periodic','oddEven'],
+    intermediario:implemented.map(t=>t.id),
+    avancado:allTechniques.map(t=>t.id)
+  };
+  /* Bancos de chaves: ampliados na v3.0 (antes eram só 6 palavras). */
+  const KEYS=['ORION','LIMA','NEXO','FAROL','BRAVO','CANTO','SOMBRA','LACRE','PRISMA','TRAMA','VIGIA','CODIGO','AGULHA','TUNEL','MARFIM','ALIBI','CORAL','ONIX','RELOGIO','PAUTA','ECLIPSE','FRESTA','LANTERNA','MOSAICO','PENDULO','RASTRO','TIMBRE','VERNIZ','ZENITE','ABISMO','BUSSOLA','CINZA','DOSSIE','ENIGMA','FAISCA','GRAFITE','HELICE','ILUSAO','JANELA','LEGADO'];
+  const AGENTS=['Insp. R. Valente','Insp. C. Moreira','Agt. T. Brandão','Agt. M. Siqueira','Insp. L. Cardoso','Agt. P. Nogueira','Insp. A. Teixeira','Agt. D. Freitas'];
   function hash(str){let h=2166136261>>>0;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
   function rngFrom(seed){let a=hash(String(seed));return function(){let t=a+=0x6D2B79F5;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
   function shuffle(a,r){a=a.slice();for(let i=a.length-1;i>0;i--){let j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
   function choose(a,r){return a[Math.floor(r()*a.length)]}
   function norm(s){return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9 ]/g,'').replace(/\s+/g,' ').trim()}
+  /* Código de verificação: 1 fragmento por categoria. Desde a v3.0 os 5 fragmentos de cada
+   * categoria são distintos, então cada uma das 15.625 soluções tem um código único. */
   function verification(solution){return categories.map(c=>solution[c].frag).join('')}
-  function generate(seed,selected){const r=rngFrom(seed);const solution={};for(const c of categories)solution[c]=choose(cards[c],r);let techs=shuffle(selected.slice(),r);while(techs.length<6)techs=techs.concat(shuffle(selected,r));techs=techs.slice(0,6);return {seed:String(seed),solution,techniques:categories.map((c,i)=>({category:c,technique:techs[i]})),verification:verification(solution)} }
-  global.MnemosineData={cards,categories,labels,implemented,advanced,allTechniques,rngFrom,shuffle,choose,norm,generate,verification};
-  global.rngFrom=rngFrom;
-})(window);
+  /* ID do caso derivado de hash da seed (evita colisões e IDs como "DICC-AZ--ARQUIVO"). */
+  function caseId(seed){return 'DICC-AZ-'+hash('id|'+seed).toString(16).toUpperCase().padStart(8,'0')}
+  const API={cards,categories,labels,implemented,advanced,allTechniques,presets,KEYS,AGENTS,hash,rngFrom,shuffle,choose,norm,verification,caseId};
+  global.MnemosineData=API;global.rngFrom=rngFrom;
+  if(typeof module!=='undefined'&&module.exports)module.exports=API;
+})(typeof window!=='undefined'?window:globalThis);

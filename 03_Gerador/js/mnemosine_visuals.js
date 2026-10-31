@@ -1,3 +1,4 @@
+/* Mnemosine — imagens dos enigmas visuais (ruído, cor, Pigpen, LSB). v3.0: recalibrado. */
 (function(global){
   function hash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
   function rngFrom(s){let a=hash(s);return function(){let t=a+=0x6D2B79F5;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
@@ -14,18 +15,18 @@
       // a PROPORÇÃO entre elas: visualmente o RGB continua parecendo ruído,
       // mas o canal vermelho acumula contraste suficiente para revelar o texto.
       // A diferença é forte o bastante para sobreviver ao JPEG usado no PDF.
-      const A=[170,116,135], B=[110,134,135];
+      const A=[170,116,135], B=[110,134,135]; // v3.0: proporção 60/40 e ruído menor — discreto no RGB, nítido no canal vermelho
       for(let i=0;i<W*H;i++){
-        const inside=md[i*4]>128, pA=inside?.68:.32, base=r()<pA?A:B;
+        const inside=md[i*4]>128, pA=inside?.60:.40, base=r()<pA?A:B;
         for(let ch=0;ch<3;ch++){
-          const n=(r()+r()+r()-1.5)*24;
+          const n=(r()+r()+r()-1.5)*10;
           img.data[i*4+ch]=Math.max(0,Math.min(255,base[ch]+n));
         }
         img.data[i*4+3]=255;
       }
       x.putImageData(img,0,0);
     }else{
-      for(let i=0;i<W*H;i++){const inside=md[i*4]>128;let n=(r()-.5)*122,base=151+n+(inside?7:-1);let v=Math.max(0,Math.min(255,base));img.data[i*4]=img.data[i*4+1]=img.data[i*4+2]=v;img.data[i*4+3]=255}x.putImageData(img,0,0);x.globalAlpha=.22;x.strokeStyle='#fff';for(let j=0;j<150;j++){let yy=r()*H;x.beginPath();x.moveTo(0,yy);x.lineTo(W,yy+(r()-.5)*6);x.stroke()}x.globalAlpha=1;
+      for(let i=0;i<W*H;i++){const inside=md[i*4]>128;let n=(r()-.5)*100,base=151+n+(inside?17:-5);let v=Math.max(0,Math.min(255,base));img.data[i*4]=img.data[i*4+1]=img.data[i*4+2]=v;img.data[i*4+3]=255}x.putImageData(img,0,0);/* v3.0: as 150 linhas brancas foram removidas — o bandeamento horizontal escondia o texto. */
     }
     return c.toDataURL('image/png');
   }
@@ -66,4 +67,4 @@
   }
   function stegReveal(dataUrl){return new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=im.width;c.height=im.height;const x=c.getContext('2d');x.drawImage(im,0,0);const d=x.getImageData(0,0,c.width,c.height);for(let i=0;i<d.data.length;i+=4){const v=(d.data[i]&1)?20:245;d.data[i]=d.data[i+1]=d.data[i+2]=v;d.data[i+3]=255}x.putImageData(d,0,0);resolve(c.toDataURL('image/png'))};im.onerror=reject;im.src=dataUrl})}
   global.MnemosineVisuals={visualData,redChannelPreview,pigpenData,pigpenChartData,stegData,stegReveal};
-})(window);
+})(typeof window!=='undefined'?window:globalThis);
