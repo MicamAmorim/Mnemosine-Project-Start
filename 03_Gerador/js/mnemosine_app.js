@@ -117,7 +117,13 @@
     $('#seed').addEventListener('keydown',e=>{if(e.key==='Enter')generate(false)});
     $('#btnPdf').addEventListener('click',exportPdf);$('#btnZip').addEventListener('click',exportZip);$('#btnHtml').addEventListener('click',exportHtml);$('#btnLink').addEventListener('click',copyLink);$('#btnPack').addEventListener('click',exportPack);
     if(FS.canWriteProject()){$('#fsGroup').hidden=false;$('#btnRoot').addEventListener('click',fsChoose);$('#btnFsCase').addEventListener('click',fsSaveCase);$('#btnFsPack').addEventListener('click',fsSavePack);FS.getRoot(false).then(r=>{if(r)refreshCases()}).catch(()=>{})}
-    if(location.protocol==='file:'){FS.getRoot(false).then(r=>{if(!r){$('#notice').hidden=false}}).catch(()=>{$('#notice').hidden=false});$('#btnNoticeRoot').addEventListener('click',()=>FS.canWriteProject()?fsChoose():toast('Este navegador não permite selecionar pastas. Use um servidor local (npx serve).','error',8000))}
+    const btnNoticeRoot=$('#btnNoticeRoot');
+    if(btnNoticeRoot){
+      btnNoticeRoot.addEventListener('click',()=>FS.canWriteProject()?fsChoose():toast('A seleção de pastas requer Chrome/Edge em localhost ou HTTPS.','error',8000));
+    }
+    if(location.protocol==='file:'){
+      FS.getRoot(false).then(r=>{if(!r){$('#notice').hidden=false}}).catch(()=>{$('#notice').hidden=false});
+    }
     markPreset();R.loadFonts();
     if(fromHash)generate(false);
   }
